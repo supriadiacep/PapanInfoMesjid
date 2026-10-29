@@ -212,8 +212,13 @@ keyPassword=passwordAnda
 - Setelah secret diisi, APK dari GitHub juga ikut ditandatangani kunci baru. Box yang
   sudah memasang APK lama (kunci debug) harus **uninstall** dulu sebelum memasang APK
   baru, dan pengaturan di box akan hilang. Catat pengaturannya sebelum uninstall.
-- Selain file AAB, Play Console juga meminta ikon 512×512, *feature graphic* 1024×500,
-  screenshot (ponsel dan TV 1920×1080), banner TV 1280×720, URL kebijakan privasi,
-  formulir *Data safety*, dan kuesioner rating konten.
+- Bahan lain untuk Play Console sudah disiapkan di folder `play-store/`:
+  - `teks-toko.md`: nama, deskripsi singkat, dan deskripsi lengkap.
+  - `gambar/`: ikon, *feature graphic*, banner TV, serta screenshot TV dan HP.
+    Buat ulang dengan `powershell -ExecutionPolicy Bypass -File play-store\buat-gambar.ps1`.
+  - `panduan-formulir.md`: jawaban untuk *Data safety*, rating konten, target audiens, dan lainnya.
+- Kebijakan privasi ada di `docs/kebijakan-privasi.html`. Ganti `[email-kontak]`, lalu
+  aktifkan GitHub Pages (**Settings → Pages**, branch `main`, folder `/docs`).
+  URL-nya diisi di Play Console.
 
 Huruf: Plus Jakarta Sans dan Amiri (lisensi SIL Open Font License, ada di `web/fonts/`).

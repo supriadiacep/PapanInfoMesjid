@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- Pembungkus screenshot: memuat halaman aplikasi di dalam iframe berukuran
+     layar tertentu lalu memperbesarnya agar memenuhi jendela.
+     Parameter: src (relatif ke folder web/), lebar & tinggi gambar hasil (W, H),
+     ukuran layar yang ditiru (w, h), pin (masuk otomatis), tab.
+     Ukuran hasil harus diberikan: viewport Edge headless lebih kecil dari --window-size. -->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; overflow: hidden; background: #0E2B2D; }
+  iframe { border: 0; transform-origin: 0 0; display: block; }
+</style>
+</head>
+<body>
+<iframe id="f"></iframe>
+<script>
+  var p = new URLSearchParams(location.search);
+  var W = +p.get('W') || 1920, H = +p.get('H') || 1080;
+  var w = +p.get('w') || W, h = +p.get('h') || H;
+  document.body.style.width = W + 'px'; document.body.style.height = H + 'px';
+  var f = document.getElementById('f');
+  f.style.width = w + 'px'; f.style.height = h + 'px';
+  f.style.transform = 'scale(' + (W / w) + ')';
+  f.src = '../../web/' + p.get('src');
+  f.onload = function () {
+    var d = f.contentDocument;
+    var st = d.createElement('style');
+    // tanda "mode pratinjau" hanya muncul di laptop, tidak di TV/HP sungguhan
+    st.textContent = '.preview-note, #modeNote { display: none !important; }';
+    d.head.appendChild(st);
+    var pin = p.get('pin');
+    if (pin && d.getElementById('loginForm')) {
+      d.getElementById('pin').value = pin;
+      d.getElementById('loginForm').requestSubmit();
+      setTimeout(function () {
+        var t = p.get('tab') && d.querySelector('[data-tab="' + p.get('tab') + '"]');
+        if (t) t.click();
+        if (d.activeElement) d.activeElement.blur();
+      }, 500);
+    }
+  };
+</script>
+</body>
+</html>

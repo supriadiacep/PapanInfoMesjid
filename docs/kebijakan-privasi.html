@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kebijakan Privasi – Papan Info Masjid</title>
+<style>
+  :root { --bg: #FBF8F2; --fg: #1C2A2B; --muted: #4A5D5E; --accent: #0E2B2D; --line: #E3DCCF; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #0E2B2D; --fg: #F3EBDD; --muted: #9CCFC4; --accent: #D9A441; --line: #24494B; } }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.65 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { color: var(--accent); font-size: 1.9rem; line-height: 1.2; margin: 0 0 4px; }
+  h2 { color: var(--accent); font-size: 1.2rem; margin: 2em 0 0.4em; }
+  .tgl { color: var(--muted); margin: 0 0 2em; }
+  table { width: 100%; border-collapse: collapse; margin: 0.5em 0; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--line); }
+  th { font-weight: 600; }
+  code { font-size: 0.92em; }
+</style>
+</head>
+<body>
+<main>
+<h1>Kebijakan Privasi Papan Info Masjid</h1>
+<p class="tgl">Berlaku sejak 29 Oktober 2026</p>
+
+<p>Papan Info Masjid adalah aplikasi untuk menampilkan jadwal sholat, hitung mundur iqomah,
+pengumuman, jadwal pengajian, dan laporan kas masjid di layar TV. Halaman ini menjelaskan
+data apa saja yang dipakai aplikasi dan bagaimana data itu diperlakukan.</p>
+
+<h2>Ringkasan</h2>
+<p><strong>Aplikasi ini tidak mengumpulkan, mengirim, atau membagikan data pribadi apa pun kepada
+pengembang maupun pihak lain.</strong> Aplikasi tidak memakai iklan, analitik, pelacakan,
+atau layanan pihak ketiga. Semua isi papan info hanya tersimpan di perangkat tempat aplikasi dipasang.</p>
+
+<h2>Data yang disimpan di perangkat</h2>
+<p>Data berikut dimasukkan sendiri oleh pengurus masjid dan disimpan di penyimpanan internal aplikasi
+pada perangkat (TV box atau tablet). Data tidak pernah dikirim ke server pengembang.</p>
+<ul>
+  <li>Isi papan info: nama dan alamat masjid, koordinat masjid (untuk menghitung waktu sholat),
+      jadwal pengajian, nama petugas Jumat, pengumuman, teks berjalan, dan laporan kas.</li>
+  <li>Foto masjid yang dipilih pengurus (opsional).</li>
+  <li>PIN pengurus untuk melindungi halaman pengaturan.</li>
+</ul>
+<p>Koordinat masjid diketik secara manual. Aplikasi <strong>tidak</strong> meminta izin lokasi
+dan tidak membaca lokasi perangkat.</p>
+
+<h2>Pengaturan dari HP di jaringan lokal</h2>
+<p>Agar isi papan info bisa diubah dari HP, aplikasi menjalankan server kecil yang hanya bisa
+diakses dari jaringan WiFi yang sama (misalnya <code>192.168.1.25:8080</code>). Server ini
+dilindungi PIN dan tidak terhubung ke internet. Data yang dikirim dari HP langsung disimpan
+di perangkat TV, tidak melewati server pengembang.</p>
+
+<h2>Izin yang dipakai</h2>
+<table>
+  <tr><th>Izin</th><th>Kegunaan</th></tr>
+  <tr><td>Internet</td><td>Menjalankan server pengaturan di jaringan lokal (WiFi masjid).</td></tr>
+  <tr><td>Status jaringan &amp; WiFi</td><td>Menampilkan alamat yang perlu dibuka di HP untuk mengatur papan info.</td></tr>
+  <tr><td>Berjalan saat perangkat menyala</td><td>Membuka papan info otomatis setelah TV box dinyalakan.</td></tr>
+  <tr><td>Mencegah layar mati</td><td>Menjaga layar tetap menyala selama papan info tampil.</td></tr>
+</table>
+
+<h2>Menghapus data</h2>
+<p>Semua data bisa dihapus kapan saja dengan menghapus data aplikasi
+(<em>Setelan → Aplikasi → Papan Info Masjid → Penyimpanan → Hapus data</em>) atau dengan
+meng-uninstall aplikasi. Karena pengembang tidak menyimpan salinan data apa pun, tidak ada
+data yang perlu diminta untuk dihapus dari pihak pengembang.</p>
+
+<h2>Anak-anak</h2>
+<p>Aplikasi ini ditujukan untuk pengurus masjid dan tidak ditujukan untuk anak-anak.
+Aplikasi tidak mengumpulkan data dari siapa pun, termasuk anak-anak.</p>
+
+<h2>Perubahan kebijakan</h2>
+<p>Bila kebijakan ini berubah, versi terbaru akan dipasang di halaman ini dengan tanggal berlaku yang baru.</p>
+
+<h2>Kontak</h2>
+<p>Pertanyaan tentang kebijakan privasi ini dapat dikirim ke: <strong>[email-kontak]</strong></p>
+</main>
+</body>
+</html>

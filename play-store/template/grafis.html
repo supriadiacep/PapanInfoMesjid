@@ -1,0 +1,57 @@
+<!doctype html>
+<!-- Gambar toko Play Store: ?jenis=ikon (512x512), fitur (1024x500), banner (1280x720) -->
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../web/css/fonts.css">
+<style>
+  :root { --hijau: #0E2B2D; --hijau-2: #15393B; --emas: #D9A441; --krem: #F3EBDD; --mint: #9CCFC4; }
+  html, body { margin: 0; overflow: hidden; }
+  /* ukuran tetap: viewport Edge headless lebih kecil dari --window-size */
+  body.ikon { width: 512px; height: 512px; }
+  body.fitur { width: 1024px; height: 500px; }
+  body.banner { width: 1280px; height: 720px; }
+  body { background: var(--hijau); color: var(--krem); font-family: 'Jakarta', sans-serif; display: flex; align-items: center; justify-content: center; }
+  .kubah { fill: none; stroke: var(--emas); stroke-linejoin: round; stroke-linecap: round; }
+  .judul { font-weight: 800; line-height: 1.05; letter-spacing: -0.01em; }
+  .sub { color: var(--mint); font-weight: 500; }
+  .wrap { display: flex; align-items: center; }
+
+  body.ikon .kubah { width: 300px; stroke-width: 7; }
+
+  body.fitur { background: radial-gradient(circle at 18% 50%, var(--hijau-2), var(--hijau) 60%); }
+  body.fitur .wrap { gap: 56px; }
+  body.fitur .kubah { width: 220px; stroke-width: 6; }
+  body.fitur .judul { font-size: 76px; }
+  body.fitur .sub { font-size: 30px; margin-top: 18px; }
+  body.fitur .jam { display: inline-block; margin-top: 26px; background: var(--emas); color: #2A1E05; font-weight: 700; font-size: 26px; padding: 10px 22px; border-radius: 14px; }
+
+  body.banner .wrap { gap: 64px; }
+  body.banner .kubah { width: 260px; stroke-width: 7; }
+  body.banner .judul { font-size: 104px; }
+  body.banner .sub { font-size: 38px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- bentuk masjid sama dengan ikon aplikasi -->
+  <svg class="kubah" viewBox="0 0 100 120" aria-hidden="true">
+    <path d="M50 6 L58 18 C68 20 74 30 72 42 L72 52 L84 52 L84 112 L16 112 L16 52 L28 52 L28 42 C26 30 32 20 42 18 Z"/>
+    <path d="M28 52 L72 52"/>
+    <path d="M36 112 L36 86 C36 76 42 70 50 70 C58 70 64 76 64 86 L64 112"/>
+    <path d="M44 112 L44 90 C44 86 47 84 50 84 C53 84 56 86 56 90 L56 112"/>
+  </svg>
+  <div class="teks">
+    <div class="judul">Papan Info<br>Masjid</div>
+    <div class="sub">Jadwal sholat, iqomah &amp; pengumuman</div>
+    <div class="jam">Tanpa internet · untuk Android TV</div>
+  </div>
+</div>
+<script>
+  var j = new URLSearchParams(location.search).get('jenis') || 'ikon';
+  document.body.className = j;
+  if (j === 'ikon') document.querySelector('.teks').remove();
+  if (j === 'banner') document.querySelector('.jam').remove();
+</script>
+</body>
+</html>
