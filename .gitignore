@@ -5,3 +5,8 @@ android/local.properties
 android/.idea/
 *.iml
 *.apk
+*.aab
+# kunci tanda tangan Play Store: jangan pernah diunggah ke GitHub
+*.jks
+*.keystore
+android/keystore.properties

@@ -46,7 +46,7 @@ Pilih salah satu cara.
 ### Cara B — lewat Android Studio
 
 1. Pasang Android Studio, lalu **Open** folder `android`.
-2. Jika diminta, pilih Gradle 8.9 dan JDK 17.
+2. Jika diminta, pilih Gradle 8.11.1 dan JDK 17.
 3. Menu **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
 4. Hasilnya ada di `android/app/build/outputs/apk/`.
 
@@ -159,5 +159,61 @@ dengan jadwal tertentu, atur di **Waktu sholat → Koreksi per waktu**.
 
 Setiap mengubah isi `web/`, buat ulang APK lalu pasang ulang. Pengaturan
 yang sudah tersimpan di box tidak hilang saat APK diperbarui.
+
+## 8. Mengunggah ke Google Play Store
+
+Play Store tidak menerima APK. Yang diunggah adalah file **AAB**
+(`papan-info-masjid.aab`), dan file itu harus ditandatangani dengan kunci milik sendiri.
+
+### Langkah 1 — buat kunci tanda tangan (sekali saja)
+
+Di Android Studio: **Build → Generate Signed App Bundle or APK → Android App Bundle →
+Create new...**, lalu isi lokasi file (misalnya `upload.jks`), password, dan *alias*
+(misalnya `upload`). Atau lewat perintah (keytool ikut terpasang bersama Android Studio/JDK):
+
+```
+keytool -genkeypair -v -keystore upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000
+```
+
+> **Simpan file `upload.jks` beserta password-nya di tempat aman dan buat cadangannya.**
+> Jangan unggah ke GitHub (sudah dikecualikan lewat `.gitignore`).
+
+### Langkah 2 — simpan kunci di GitHub
+
+1. Ubah file kunci menjadi teks base64. Di PowerShell:
+   `[Convert]::ToBase64String([IO.File]::ReadAllBytes("upload.jks")) | Set-Clipboard`
+2. Buka repository → **Settings → Secrets and variables → Actions → New repository secret**,
+   lalu buat empat secret berikut:
+
+| Nama secret | Isi |
+|---|---|
+| `KEYSTORE_BASE64` | teks base64 dari langkah 1 |
+| `KEYSTORE_PASSWORD` | password keystore |
+| `KEY_ALIAS` | alias kunci (misalnya `upload`) |
+| `KEY_PASSWORD` | password kunci (biasanya sama dengan password keystore) |
+
+3. Jalankan ulang **Actions → Build APK**. Sekarang di bagian *Artifacts* muncul juga
+   **papan-info-masjid-aab**. File inilah yang diunggah ke Play Console.
+
+Nomor versi (`versionCode`) naik sendiri setiap kali workflow berjalan, jadi setiap
+hasil build bisa langsung diunggah sebagai pembaruan.
+
+Untuk Android Studio (tanpa GitHub), buat file `android/keystore.properties`:
+
+```
+storeFile=../upload.jks
+storePassword=passwordAnda
+keyAlias=upload
+keyPassword=passwordAnda
+```
+
+### Catatan
+
+- Setelah secret diisi, APK dari GitHub juga ikut ditandatangani kunci baru. Box yang
+  sudah memasang APK lama (kunci debug) harus **uninstall** dulu sebelum memasang APK
+  baru, dan pengaturan di box akan hilang. Catat pengaturannya sebelum uninstall.
+- Selain file AAB, Play Console juga meminta ikon 512×512, *feature graphic* 1024×500,
+  screenshot (ponsel dan TV 1920×1080), banner TV 1280×720, URL kebijakan privasi,
+  formulir *Data safety*, dan kuesioner rating konten.
 
 Huruf: Plus Jakarta Sans dan Amiri (lisensi SIL Open Font License, ada di `web/fonts/`).

@@ -2,15 +2,26 @@ plugins {
     id 'com.android.application'
 }
 
+// Kunci tanda tangan rilis untuk Play Store. Diambil dari variabel lingkungan
+// (GitHub Actions) atau dari file android/keystore.properties (Android Studio).
+// Jika tidak ada, rilis ditandatangani kunci debug: tetap bisa dipasang lewat
+// flashdisk, tapi tidak bisa diunggah ke Play Store.
+def keyProps = new Properties()
+def keyPropsFile = rootProject.file('keystore.properties')
+if (keyPropsFile.exists()) keyPropsFile.withInputStream { keyProps.load(it) }
+def keyValue = { String env, String prop -> System.getenv(env) ?: keyProps.getProperty(prop) }
+def releaseStoreFile = keyValue('KEYSTORE_FILE', 'storeFile')
+
 android {
     namespace 'id.masjid.papaninfo'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId 'id.masjid.papaninfo'
         minSdk 21          // Android 5.0 ke atas: hampir semua STB/Android TV box
-        targetSdk 34
-        versionCode 1
+        targetSdk 36       // syarat Play Store untuk aplikasi baru sejak 31 Agustus 2026
+        // harus naik setiap kali mengunggah ke Play Store; di GitHub diisi otomatis
+        versionCode((System.getenv('VERSION_CODE') ?: '1') as int)
         versionName '1.0'
     }
 
@@ -21,12 +32,21 @@ android {
         }
     }
 
+    signingConfigs {
+        if (releaseStoreFile) {
+            release {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword keyValue('KEYSTORE_PASSWORD', 'storePassword')
+                keyAlias keyValue('KEY_ALIAS', 'keyAlias')
+                keyPassword keyValue('KEY_PASSWORD', 'keyPassword')
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
-            // ditandatangani dengan kunci debug agar langsung bisa dipasang
-            // lewat flashdisk; ganti dengan kunci sendiri bila ingin rilis resmi
-            signingConfig signingConfigs.debug
+            signingConfig releaseStoreFile ? signingConfigs.release : signingConfigs.debug
         }
     }
 

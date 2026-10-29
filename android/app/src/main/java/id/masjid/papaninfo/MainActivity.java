@@ -24,6 +24,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +69,15 @@ public class MainActivity extends Activity {
         web.setBackgroundColor(0xFF0E2B2D);
         setContentView(web);
         hideSystemUi();
+
+        // Android 13 ke atas memakai cara baru untuk tombol Kembali (onBackPressed
+        // tidak dipanggil lagi sejak targetSdk 36)
+        if (Build.VERSION.SDK_INT >= 33) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                    OnBackInvokedDispatcher.PRIORITY_DEFAULT, new OnBackInvokedCallback() {
+                        @Override public void onBackInvoked() { backToSchedule(); }
+                    });
+        }
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -166,6 +177,10 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
+        backToSchedule();
+    }
+
+    private void backToSchedule() {
         // aplikasi ini bisa menjadi layar utama (launcher), jadi tombol Kembali
         // tidak menutup aplikasi, hanya kembali ke layar jadwal
         if (web != null && server != null) {
