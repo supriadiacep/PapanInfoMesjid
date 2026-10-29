@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pengaturan Papan Info</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<section id="login" class="login">
+  <form id="loginForm" class="login-card" autocomplete="off">
+    <h1 id="loginTitle">Pengaturan</h1>
+    <p>Masukkan PIN pengurus untuk mengubah isi papan info.</p>
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autofocus>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button type="submit" class="btn primary">Masuk</button>
+    <a class="btn ghost" href="index.html">Kembali ke layar</a>
+    <button type="button" class="linklike" id="forgotBtn">Lupa PIN?</button>
+    <p class="hint" id="loginHint"></p>
+  </form>
+
+  <form id="resetForm" class="login-card" autocomplete="off" hidden>
+    <h1>Atur ulang PIN</h1>
+    <div id="resetBody"></div>
+  </form>
+</section>
+
+<div id="app" class="app" hidden>
+  <header class="bar">
+    <div class="bar-title">
+      <h1 id="appTitle">Pengaturan</h1>
+      <p id="modeNote"></p>
+    </div>
+    <div class="bar-actions">
+      <a class="btn ghost" href="index.html" id="backBtn">Lihat layar</a>
+      <button class="btn primary" id="saveBtn" type="button">Simpan</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs" aria-label="Bagian pengaturan"></nav>
+
+  <main id="content" class="content"></main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+</div>
+
+<script src="js/praytime.js"></script>
+<script src="js/hijri.js"></script>
+<script src="js/store.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

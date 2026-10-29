@@ -1,0 +1,208 @@
+/* Layar papan info masjid — dirancang untuk TV 16:9, dibaca dari jauh.
+   Semua ukuran memakai rem yang mengikuti tinggi layar. */
+:root {
+  --ink: #0E2B2D;        /* glasir toska gelap */
+  --ink-2: #133638;      /* lapisan sedikit lebih terang */
+  --glaze: #2E6B66;      /* garis & struktur */
+  --plaster: #F2EADB;    /* teks utama */
+  --celadon: #9CC7BB;    /* teks kedua */
+  --brass: #D9A441;      /* waktu berikutnya */
+  --brass-ink: #2A1E06;
+  --night: #050C0D;
+  color-scheme: dark;
+}
+body[data-tema="malam"] {
+  --ink: #121A33; --ink-2: #18213F; --glaze: #3B4C80; --plaster: #EEF0F7; --celadon: #A9B6DA; --brass: #E0B04F; --brass-ink: #241904; --night: #05070F;
+}
+body[data-tema="kayu"] {
+  --ink: #2A1C13; --ink-2: #332319; --glaze: #6E4C33; --plaster: #F5ECDF; --celadon: #D4BC9C; --brass: #E3A93D; --brass-ink: #2A1A03; --night: #0C0805;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: calc(100vh / 54); background: var(--ink); }
+@media (max-aspect-ratio: 16/9) { html { font-size: calc(100vw / 96); } }
+body {
+  font-family: 'Jakarta', system-ui, sans-serif;
+  background: var(--ink);
+  color: var(--plaster);
+  height: 100vh; overflow: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+}
+body.preview { cursor: default; }
+
+#stage {
+  position: relative;
+  width: 96rem; height: 54rem;
+  margin: 0 auto;
+  padding: 2.2rem 2.8rem 0;
+  display: grid;
+  grid-template-rows: 6rem minmax(0,1fr) 15.5rem 4.2rem;
+  grid-template-columns: minmax(0, 1fr);
+  transition: transform 2s ease;
+}
+
+/* ---------- atas ---------- */
+.top { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.1rem solid var(--glaze); padding-bottom: 1.2rem; }
+.identity { display: flex; align-items: center; }
+.identity > * + * { margin-left: 1.4rem; }
+.mark { width: 4rem; height: 4rem; color: var(--brass); flex: none; }
+#nama { font-size: 2.7rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+#alamat { font-size: 1.25rem; color: var(--celadon); margin-top: 0.25rem; }
+.dates { text-align: right; }
+#masehi { font-size: 1.9rem; font-weight: 700; }
+#hijriah { font-size: 1.5rem; color: var(--celadon); margin-top: 0.2rem; }
+
+/* ---------- tengah ---------- */
+.middle { display: grid; grid-template-columns: minmax(0, 1fr) 36rem; gap: 3rem; align-items: center; min-height: 0; }
+.clockwrap { padding-left: 0.2rem; }
+.clock { display: flex; align-items: baseline; font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums; line-height: 0.9; }
+#hm { font-size: 15.5rem; font-weight: 800; letter-spacing: -0.045em; }
+#ss { font-size: 4.6rem; font-weight: 600; color: var(--celadon); margin-left: 1.4rem; width: 6rem; }
+.countdown { font-size: 2.3rem; font-weight: 500; color: var(--celadon); margin-top: 1.6rem; font-variant-numeric: tabular-nums; }
+.countdown b { color: var(--plaster); font-weight: 700; }
+.countdown.soon { color: var(--brass); }
+.countdown.soon b { color: var(--brass); }
+
+.panel {
+  align-self: stretch; margin: 2.4rem 0 2rem;
+  background: var(--ink-2);
+  border-left: 0.35rem solid var(--brass);
+  border-radius: 0 1.2rem 1.2rem 0;
+  padding: 2rem 2.4rem 1.6rem;
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+}
+.slide { flex: 1; min-height: 0; overflow: hidden; transition: opacity .6s ease; }
+.slide.out { opacity: 0; }
+.slide h3 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 1.2rem; }
+.slide .when { font-size: 1.25rem; color: var(--celadon); margin: -0.8rem 0 1.2rem; }
+
+.list { list-style: none; display: grid; gap: 1rem; }
+.list li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1.2rem; align-items: start; }
+.list .d { font-size: 1.2rem; font-weight: 700; color: var(--brass); padding-top: 0.15rem; line-height: 1.3; }
+.list .d small { display: block; font-weight: 500; color: var(--celadon); font-size: 1.05rem; }
+.list .t { font-size: 1.5rem; font-weight: 700; line-height: 1.25; }
+.list .p { font-size: 1.2rem; color: var(--celadon); margin-top: 0.2rem; }
+.list li.today .d { color: var(--plaster); }
+
+.petugas { display: grid; gap: 1.2rem; }
+.petugas div { display: grid; grid-template-columns: 8rem 1fr; align-items: baseline; border-bottom: 0.08rem solid var(--glaze); padding-bottom: 0.9rem; }
+.petugas dt { font-size: 1.3rem; color: var(--celadon); }
+.petugas dd { font-size: 1.9rem; font-weight: 700; line-height: 1.2; }
+
+.announce { font-size: 1.9rem; line-height: 1.45; font-weight: 500; }
+.quote { font-size: 2.1rem; line-height: 1.4; font-weight: 600; }
+.quote-src { font-size: 1.3rem; color: var(--brass); margin-top: 1.2rem; font-weight: 600; }
+
+.kas { display: grid; gap: 0.9rem; font-variant-numeric: tabular-nums; }
+.kas div { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.45rem; }
+.kas div span:first-child { color: var(--celadon); }
+.kas div b { font-weight: 700; }
+.kas .total { border-top: 0.1rem solid var(--glaze); padding-top: 0.9rem; margin-top: 0.3rem; }
+.kas .total b { font-size: 2.3rem; color: var(--brass); font-weight: 800; }
+.kas .note { font-size: 1.1rem; color: var(--celadon); }
+
+.dots { display: flex; margin-top: 1rem; }
+.dots i + i { margin-left: 0.6rem; }
+.dots i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--glaze); }
+.dots i.on { background: var(--brass); width: 2rem; border-radius: 0.35rem; }
+
+/* ---------- deretan waktu sholat: lengkung mihrab ---------- */
+.times { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1.1rem; align-items: end; padding-bottom: 1.2rem; }
+.arch {
+  position: relative;
+  height: 13.6rem;
+  border: 0.14rem solid var(--glaze);
+  border-radius: 50% 50% 0.8rem 0.8rem / 34% 34% 0.8rem 0.8rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding-bottom: 1.3rem;
+  text-align: center;
+}
+.arch .ar { font-family: 'Amiri', serif; font-size: 1.6rem; font-weight: 700; color: var(--celadon); line-height: 1; margin-bottom: 0.4rem; }
+.arch .nm { font-size: 1.55rem; font-weight: 700; }
+.arch .tm { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.05; margin-top: 0.2rem; }
+.arch.minor { height: 11.6rem; }
+.arch.minor .tm { font-size: 2.9rem; }
+.arch.minor .nm { color: var(--celadon); font-weight: 600; }
+.arch.past { opacity: 0.45; }
+.arch.next {
+  background: var(--brass); border-color: var(--brass); color: var(--brass-ink);
+  height: 15rem;
+  box-shadow: 0 0 3.5rem -0.6rem color-mix(in srgb, var(--brass) 55%, transparent);
+}
+.arch.next .ar, .arch.next .nm { color: var(--brass-ink); }
+.arch.next .tm { font-size: 3.9rem; letter-spacing: -0.04em; }
+.arch.next::before { /* lampu gantung kecil */
+  content: ''; position: absolute; top: 1.5rem; left: 50%; width: 0.8rem; height: 0.8rem;
+  margin-left: -0.4rem; border-radius: 50%; background: var(--brass-ink); opacity: .55;
+}
+
+/* ---------- teks berjalan ---------- */
+.ticker { display: flex; align-items: center; border-top: 0.1rem solid var(--glaze); margin: 0 -2.8rem; padding: 0 2.8rem; background: var(--ink-2); }
+.ticker-track { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
+.ticker-text { display: inline-block; font-size: 1.6rem; font-weight: 500; padding-left: 100%; animation: ticker linear infinite; }
+.ticker-text .sep { color: var(--brass); margin: 0 1.6rem; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+.admin-hint { margin-left: 2rem; font-size: 1.05rem; color: var(--celadon); white-space: nowrap; }
+.admin-hint:empty { display: none; }
+
+/* ---------- foto masjid ---------- */
+.bg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-size: cover; background-position: center; z-index: 0; }
+.bg::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: var(--ink); opacity: .86; }
+#stage { z-index: 1; }
+.panel { position: relative; }
+.foto { position: absolute; top: 0; right: 0; bottom: 0; left: 0; margin: 0; }
+.foto img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0.6rem; }
+.slide { position: relative; }
+
+/* ---------- layar penuh ---------- */
+.overlay {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 10;
+  background: var(--ink);
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+.overlay[hidden] { display: none; }
+.overlay::before { /* pola bintang delapan, sangat samar */
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: .045; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23F2EADB' stroke-width='1.5'%3E%3Cpath d='M60 18l12 30 30 12-30 12-12 30-12-30-30-12 30-12z'/%3E%3Cpath d='M30 30h60v60H30z' transform='rotate(45 60 60)'/%3E%3Cpath d='M30 30h60v60H30z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 12rem 12rem;
+}
+.ov-inner { position: relative; width: 80rem; }
+.ov-arab { font-family: 'Amiri', serif; font-weight: 700; font-size: 5rem; color: var(--brass); line-height: 1.2; }
+.ov-title { font-size: 4.2rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.6rem; }
+.ov-big { font-size: 17rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; margin: 1.6rem 0 1rem; }
+.ov-big:empty { display: none; }
+.ov-bar { height: 0.6rem; width: 46rem; margin: 0 auto 2rem; background: var(--glaze); border-radius: 0.3rem; overflow: hidden; }
+.ov-bar span { display: block; height: 100%; width: 0; background: var(--brass); transition: width 1s linear; }
+.ov-bar.off { visibility: hidden; }
+.ov-sub { font-size: 2.3rem; line-height: 1.45; color: var(--celadon); font-weight: 500; max-width: 64rem; margin: 0 auto; }
+.ov-sub b { color: var(--plaster); font-weight: 700; }
+.ov-clock { font-size: 2rem; font-weight: 700; margin-top: 2.6rem; font-variant-numeric: tabular-nums; color: var(--celadon); }
+
+.overlay.mode-clock { z-index: 40; }
+.overlay.mode-clock .ov-title { color: var(--brass); }
+.overlay.mode-clock .ov-sub { text-align: left; font-size: 2rem; }
+.fix { margin: 2rem 0 0 2.4rem; display: grid; grid-gap: 0.9rem; color: var(--plaster); }
+.overlay.mode-iqomah .ov-big { color: var(--brass); }
+.overlay.mode-iqomah.final .ov-big { color: var(--plaster); }
+.overlay.mode-sholat { background: var(--night); }
+.overlay.mode-sholat::before { opacity: .03; }
+.overlay.mode-sholat .ov-title { font-size: 3.2rem; color: color-mix(in srgb, var(--plaster) 70%, transparent); }
+.overlay.mode-sholat .ov-sub, .overlay.mode-sholat .ov-clock { color: color-mix(in srgb, var(--celadon) 60%, transparent); }
+.overlay.mode-sholat .ov-arab { font-size: 3.6rem; opacity: .6; }
+
+/* pita menjelang adzan, menggantikan hitung mundur biasa */
+.countdown.pre { display: inline-block; background: var(--brass); color: var(--brass-ink); padding: 0.7rem 1.6rem; border-radius: 0.8rem; font-weight: 700; }
+.countdown.pre b { margin-left: 1rem; color: var(--brass-ink); font-size: 2.8rem; font-weight: 800; }
+
+/* redup malam */
+.dim { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: #000; pointer-events: none; z-index: 20; transition: opacity 3s; }
+.dim[hidden] { display: none; }
+
+/* petunjuk pratinjau */
+.preview-note { position: fixed; left: 50%; transform: translateX(-50%); top: 0.6rem; z-index: 30; font: 600 0.95rem 'Jakarta', sans-serif; background: var(--brass); color: var(--brass-ink); padding: 0.5rem 0.9rem; border-radius: 0.5rem; text-decoration: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-text { animation-duration: 0s !important; padding-left: 0; }
+  #stage, .slide, .dim { transition: none; }
+}

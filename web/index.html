@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jadwal Sholat Masjid</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/display.css">
+</head>
+<body data-tema="zamrud">
+<div id="bg" class="bg" hidden></div>
+<div id="stage">
+
+  <header class="top">
+    <div class="identity">
+      <svg class="mark" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 6c3 5 9 8 9 15 0 3-1 5-2 6h9v31H16V27h9c-1-1-2-3-2-6 0-7 6-10 9-15z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M26 58V44a6 6 0 0 1 12 0v14" fill="none" stroke="currentColor" stroke-width="3"/>
+      </svg>
+      <div>
+        <h1 id="nama">Masjid</h1>
+        <p id="alamat"></p>
+      </div>
+    </div>
+    <div class="dates">
+      <p id="masehi"></p>
+      <p id="hijriah"></p>
+    </div>
+  </header>
+
+  <main class="middle">
+    <section class="clockwrap">
+      <div class="clock"><span id="hm">00:00</span><span id="ss">00</span></div>
+      <p class="countdown" id="countdown"></p>
+    </section>
+
+    <section class="panel" id="panel">
+      <div class="slide" id="slide"></div>
+      <div class="dots" id="dots"></div>
+    </section>
+  </main>
+
+  <section class="times" id="times"></section>
+
+  <footer class="ticker">
+    <div class="ticker-track"><div class="ticker-text" id="ticker"></div></div>
+    <div class="admin-hint" id="adminHint"></div>
+  </footer>
+</div>
+
+<!-- layar penuh: adzan / iqomah / sholat / jumat -->
+<div id="overlay" class="overlay" hidden>
+  <div class="ov-inner">
+    <p class="ov-arab" id="ovArab"></p>
+    <h2 class="ov-title" id="ovTitle"></h2>
+    <div class="ov-big" id="ovBig"></div>
+    <div class="ov-bar"><span id="ovBar"></span></div>
+    <p class="ov-sub" id="ovSub"></p>
+    <p class="ov-clock" id="ovClock"></p>
+  </div>
+</div>
+
+<div id="dim" class="dim" hidden></div>
+
+<script src="js/praytime.js"></script>
+<script src="js/hijri.js"></script>
+<script src="js/store.js"></script>
+<script src="js/display.js"></script>
+</body>
+</html>
