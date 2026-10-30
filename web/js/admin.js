@@ -210,6 +210,8 @@
       (server && !onTv ? '<button type="button" class="btn primary" id="clockSync">Samakan jam box dengan HP ini</button>' : '') +
       (nat ? '<button type="button" class="btn" id="dateSettings">Buka pengaturan tanggal & jam</button>' : '') +
       '</div></div>' +
+      (server ? '<div class="group"><h3>Layar tetap menyala</h3><p>Pemeriksaan pengaturan box yang bisa membuat layar TV mati sendiri.</p>' +
+        '<div class="callout" id="powerInfo">Memeriksa pengaturan daya box…</div></div>' : '') +
       '<div class="group"><h3>Ganti PIN</h3><div class="grid">' +
       '<div class="field"><label for="pinOld">PIN lama</label><input id="pinOld" type="password" inputmode="numeric" maxlength="8"></div>' +
       '<div class="field"><label for="pinNew">PIN baru</label><input id="pinNew" type="password" inputmode="numeric" maxlength="8"><small>4 sampai 8 angka</small></div>' +
@@ -242,6 +244,40 @@
       if (!i.server) { el.innerHTML = 'Ini mode pratinjau di browser. Setelah aplikasi dipasang di box, alamat pengaturan untuk HP muncul di sini.'; return; }
       if (!i.ip) { el.innerHTML = 'Box belum tersambung ke WiFi. Sambungkan box ke WiFi masjid agar bisa diatur dari HP.'; return; }
       el.innerHTML = 'Sambungkan HP ke WiFi yang sama dengan box, lalu buka alamat ini di browser HP:<br><code>http://' + esc(i.ip) + ':' + (i.port || 8080) + '</code>';
+    });
+  }
+
+  function renderPowerInfo() {
+    if (!$('powerInfo')) return;
+    MasjidStore.info().then(function (i) {
+      var el = $('powerInfo'); if (!el) return;
+      var p = i.power;
+      if (!p) { el.innerHTML = 'Pengaturan daya tidak bisa diperiksa. Perbarui aplikasi di box ke versi terbaru.'; return; }
+      var D = MasjidStore.fmtDuration, risk = MasjidStore.sleepRisk(p), html = '';
+      function row(label, v) { return label + ': <b>' + (v == null ? 'tidak ada di box ini' : v > 0 ? D(v) : 'tidak pernah') + '</b>'; }
+      if (risk) {
+        el.className = 'callout warn';
+        html += '<p class="warn-title">Box diatur untuk tidur otomatis setelah ' + D(risk.ms) + ' tanpa tombol remote ditekan.</p>' +
+          (risk.sure ? '<p>Pengaturan ini mengalahkan aplikasi, jadi papan info akan hilang dari layar.</p>'
+                     : '<p>Di sebagian box pengaturan ini tetap membuat box tidur walaupun aplikasi sedang tampil.</p>') +
+          '<p>Cara mematikan: buka pengaturan Android, lalu cari salah satu menu ini dan ubah ke <b>Never / Tidak pernah</b>:</p><ul>' +
+          '<li>System → Power &amp; Energy → <i>When inactive / Turn off display</i></li>' +
+          '<li>Device Preferences → Screen saver → <i>Put device to sleep</i></li>' +
+          '<li>Pengaturan → <i>Auto sleep / Sleep timer</i></li></ul>' +
+          '<p>Jika menunya tidak ada, dari komputer dengan adb:<br><code>adb shell settings put secure attentive_timeout -1</code><br><code>adb shell settings put secure sleep_timeout -1</code></p>';
+      } else {
+        el.className = 'callout ok';
+        html += '<p class="ok-title">Pengaturan box tidak membuat box tidur otomatis.</p>';
+      }
+      html += '<p class="hint">' + row('Batas tidak aktif Android', p.attentiveTimeout) + ' · ' + row('Tidur otomatis box', p.sleepTimeout) + '</p>';
+      if (p.lastOff) {
+        var d = new Date(p.lastOff);
+        html += '<p>Layar box terakhir mati: <b>' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + '</b>' +
+          (p.offCount > 1 ? ' (' + p.offCount + ' kali tercatat)' : '') + '.</p>';
+      } else {
+        html += '<p>Layar box belum pernah mati sejak aplikasi berjalan. Jika layar TV tetap padam sendiri, kemungkinan besar TV-nya yang mati otomatis: matikan fitur <i>Eco / Auto Power Off / Auto Standby</i> di menu TV, dan <i>HDMI-CEC</i> bila perlu.</p>';
+      }
+      el.innerHTML = html;
     });
   }
 
@@ -290,7 +326,7 @@
     var sec = SECTIONS.filter(function (s) { return s.id === id; })[0] || SECTIONS[0];
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', t.dataset.tab === sec.id ? 'true' : 'false'); });
     $('content').innerHTML = sec.render();
-    renderPreview(); renderNet(); renderClockInfo();
+    renderPreview(); renderNet(); renderClockInfo(); renderPowerInfo();
     bindSpecial();
   }
 

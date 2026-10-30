@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
             server = new LocalServer(new LocalServer.Assets() {
                 @Override public InputStream open(String path) throws IOException { return am.open(path); }
             }, a.getFilesDir(), ver);
+            server.setStatus(PowerCheck.get(a));
         }
         return server;
     }
@@ -64,6 +65,9 @@ public class MainActivity extends Activity {
                 | WindowManager.LayoutParams.FLAG_FULLSCREEN
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                 | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+
+        // mulai mencatat kapan layar box mati (lihat Pengaturan > Sistem)
+        PowerCheck.get(this);
 
         web = new WebView(this);
         web.setBackgroundColor(0xFF0E2B2D);

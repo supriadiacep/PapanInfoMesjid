@@ -85,6 +85,8 @@ aplikasi layar utama.
 
 **Dari HP (paling mudah):** sambungkan HP ke WiFi yang sama dengan box.
 Alamatnya tampil di pojok kanan bawah layar TV, misalnya `192.168.1.25:8080`.
+Jika port 8080 sudah dipakai aplikasi lain, box otomatis memakai port lain (8081, 8082, …)
+dan alamat di layar TV ikut menyesuaikan; port yang terpilih diingat untuk seterusnya.
 Ketik alamat itu di Chrome HP, masukkan PIN, ubah isinya, tekan **Simpan**.
 Layar TV ikut berubah dalam ±10 detik.
 
@@ -154,7 +156,8 @@ dengan jadwal tertentu, atur di **Waktu sholat → Koreksi per waktu**.
 - Tampilan & logika: `web/` (HTML, CSS, JavaScript biasa).
 - Android: `android/app/src/main/java/id/masjid/papaninfo/`
   - `MainActivity.java` — layar penuh, layar selalu nyala, tombol remote.
-  - `LocalServer.java` — server kecil untuk pengaturan dari HP (port 8080).
+  - `LocalServer.java` — server kecil untuk pengaturan dari HP (port 8080, otomatis pindah bila terpakai).
+  - `PowerCheck.java` — memeriksa pengaturan tidur box dan mencatat kapan layar box mati.
   - `BootReceiver.java` — membuka aplikasi setelah box menyala.
 
 Setiap mengubah isi `web/`, buat ulang APK lalu pasang ulang. Pengaturan

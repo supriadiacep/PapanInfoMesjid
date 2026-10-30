@@ -404,8 +404,11 @@
 
   function showAdminHint() {
     MasjidStore.info().then(function (i) {
-      var el = $('adminHint');
-      if (i.server && i.ip && cfg.tampilan.tampilkanAlamatAdmin) el.textContent = 'Pengaturan dari HP: ' + i.ip + ':' + (i.port || 8080);
+      var el = $('adminHint'), risk = MasjidStore.sleepRisk(i.power);
+      el.classList.toggle('warn', !!risk);
+      // peringatan tetap tampil walau alamat pengaturan disembunyikan
+      if (risk) el.textContent = 'Box akan tidur sendiri setelah ' + MasjidStore.fmtDuration(risk.ms) + ' — lihat Pengaturan › Sistem';
+      else if (i.server && i.ip && cfg.tampilan.tampilkanAlamatAdmin) el.textContent = 'Pengaturan dari HP: ' + i.ip + ':' + (i.port || 8080);
       else el.textContent = '';
     });
   }

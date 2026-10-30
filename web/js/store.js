@@ -231,7 +231,25 @@
     });
   }
 
+  // pengaturan box yang membuat layar mati sendiri walau aplikasi menahannya tetap menyala
+  // (power dari /api/info; nilai dalam milidetik, 0 atau negatif berarti "tidak pernah")
+  function sleepRisk(power) {
+    if (!power) return null;
+    var a = power.attentiveTimeout, s = power.sleepTimeout;
+    if (a > 0) return { ms: a, sure: true };
+    if (s > 0) return { ms: s, sure: false };
+    return null;
+  }
+
+  function fmtDuration(ms) {
+    var m = Math.round(ms / 60000);
+    if (m < 60) return m + ' menit';
+    var h = Math.floor(m / 60), r = m % 60;
+    return h + ' jam' + (r ? ' ' + r + ' menit' : '');
+  }
+
   global.MasjidStore = {
+    sleepRisk: sleepRisk, fmtDuration: fmtDuration,
     resetPin: resetPin, clock: clock, syncClock: syncClock, photoUrl: photoUrl, uploadPhoto: uploadPhoto, deletePhoto: deletePhoto, LS_PHOTO: LS_PHOTO,
     DEFAULTS: DEFAULTS, LS_KEY: LS_KEY,
     load: load, save: save, checkPin: checkPin, changePin: changePin, info: info, detect: detect,

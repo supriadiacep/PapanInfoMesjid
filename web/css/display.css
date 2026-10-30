@@ -145,6 +145,7 @@ body.preview { cursor: default; }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
 .admin-hint { margin-left: 2rem; font-size: 1.05rem; color: var(--celadon); white-space: nowrap; }
 .admin-hint:empty { display: none; }
+.admin-hint.warn { color: #E58B76; font-weight: 600; }
 
 /* ---------- foto masjid ---------- */
 .bg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-size: cover; background-position: center; z-index: 0; }

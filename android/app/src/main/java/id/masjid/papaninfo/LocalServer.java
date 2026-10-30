@@ -15,8 +15,10 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -36,18 +38,24 @@ public class LocalServer {
         InputStream open(String path) throws IOException;
     }
 
+    /** Keterangan tambahan dari box untuk /api/info (di Android: PowerCheck). */
+    public interface Status {
+        String json();
+    }
+
     private static final Charset UTF8 = Charset.forName("UTF-8");
-    private static final int[] PORTS = {8080, 8081, 8888};
+    private static final int[] PORTS = {8080, 8081, 8082, 8083, 8084, 8085, 8086, 8087, 8088, 8089, 8888};
     private static final int MAX_BODY = 4 * 1024 * 1024;
     private static final String DEFAULT_PIN = "1234";
 
     private final Assets assets;
-    private final File configFile, pinFile, photoFile;
+    private final File configFile, pinFile, photoFile, portFile;
     private final Object lock = new Object();
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
     private final String version;
     private ServerSocket serverSocket;
     private volatile int port = -1;
+    private volatile Status status;
 
     // jam yang disamakan dari HP, dijangkarkan ke jam monotonik box
     // (tetap benar walau jam sistem box salah; hilang bila box dimatikan)
@@ -61,32 +69,57 @@ public class LocalServer {
         this.assets = assets;
         this.configFile = new File(dataDir, "config.json");
         this.pinFile = new File(dataDir, "pin.txt");
+        this.portFile = new File(dataDir, "port.txt");
         this.photoFile = new File(dataDir, "foto-masjid.jpg");
         this.version = version;
     }
 
+    public void setStatus(Status s) { status = s; }
+
     public synchronized int start() throws IOException {
         if (port > 0) return port;
+        // urutan coba: port yang terakhir dipakai (agar alamat di HP tidak berubah-ubah),
+        // lalu 8080-8089, 8888, dan terakhir port bebas mana saja pilihan sistem (0)
+        List<Integer> tries = new ArrayList<Integer>();
+        int saved = readSavedPort();
+        if (saved > 0) tries.add(saved);
+        for (int p : PORTS) if (!tries.contains(p)) tries.add(p);
+        tries.add(0);
         IOException last = null;
-        for (int p : PORTS) {
+        for (int p : tries) {
             try {
                 ServerSocket s = new ServerSocket();
                 s.setReuseAddress(true);
                 s.bind(new InetSocketAddress(p));
                 serverSocket = s;
-                port = p;
+                port = s.getLocalPort();
                 break;
             } catch (IOException e) {
                 last = e;
             }
         }
         if (port < 0) throw last != null ? last : new IOException("Tidak ada port yang bebas");
+        if (port != saved) savePort(port);
         Thread t = new Thread(new Runnable() {
             @Override public void run() { acceptLoop(); }
         }, "papan-info-server");
         t.setDaemon(true);
         t.start();
         return port;
+    }
+
+    private int readSavedPort() {
+        try {
+            String s = new String(readFile(portFile), UTF8).trim();
+            int p = Integer.parseInt(s);
+            return p > 0 && p < 65536 ? p : -1;
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    private void savePort(int p) {
+        try { writeAtomic(portFile, String.valueOf(p).getBytes(UTF8)); } catch (IOException ignored) { }
     }
 
     public int getPort() { return port; }
@@ -177,7 +210,10 @@ public class LocalServer {
                 String ip = findIp();
                 String json = "{\"app\":\"masjid-tv\",\"version\":\"" + esc(version) + "\",\"port\":" + port +
                         ",\"ip\":" + (ip == null ? "null" : "\"" + ip + "\"") +
-                        ",\"defaultPin\":" + (!pinFile.exists()) + ",\"onBox\":" + r.local + "}";
+                        ",\"defaultPin\":" + (!pinFile.exists()) + ",\"onBox\":" + r.local;
+                String extra = null;
+                try { if (status != null) extra = status.json(); } catch (Exception ignored) { }
+                json += ",\"power\":" + (extra == null ? "null" : extra) + "}";
                 send(out, 200, "application/json", json.getBytes(UTF8));
                 return;
             }
