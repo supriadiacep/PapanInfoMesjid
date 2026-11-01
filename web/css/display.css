@@ -1,5 +1,11 @@
 /* Layar papan info masjid — dirancang untuk TV 16:9, dibaca dari jauh.
-   Semua ukuran memakai rem yang mengikuti tinggi layar. */
+   Semua ukuran memakai rem yang mengikuti tinggi layar.
+
+   Harus tetap jalan di WebView bawaan box Android 5–7 (Chrome 37–55):
+   - tata letak memakai flexbox, BUKAN CSS grid (grid baru ada di Chrome 57)
+   - tanpa `gap` pada flexbox (Chrome 84) — jarak memakai margin
+   - tanpa color-mix() (Chrome 111)
+   - variabel warna (--ink dll.) di Chrome < 49 diganti oleh js/compat.js */
 :root {
   --ink: #0E2B2D;        /* glasir toska gelap */
   --ink-2: #133638;      /* lapisan sedikit lebih terang */
@@ -19,34 +25,42 @@ body[data-tema="kayu"] {
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: calc(100vh / 54); background: var(--ink); }
+html { font-size: calc(100vh / 54); background: #0E2B2D; background: var(--ink); }
 @media (max-aspect-ratio: 16/9) { html { font-size: calc(100vw / 96); } }
 body {
-  font-family: 'Jakarta', system-ui, sans-serif;
-  background: var(--ink);
-  color: var(--plaster);
+  font-family: 'Jakarta', sans-serif;
+  background: #0E2B2D; background: var(--ink);
+  color: #F2EADB; color: var(--plaster);
   height: 100vh; overflow: hidden;
   cursor: none;
   -webkit-font-smoothing: antialiased;
 }
 body.preview { cursor: default; }
 
+/* angka sama lebar agar jam tidak bergoyang */
+.tnum, .clock, .countdown, .kas, .arch .tm, .ov-big, .ov-clock {
+  -webkit-font-feature-settings: 'tnum' 1; font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums;
+}
+
 #stage {
   position: relative;
   width: 96rem; height: 54rem;
   margin: 0 auto;
   padding: 2.2rem 2.8rem 0;
-  display: grid;
-  grid-template-rows: 6rem minmax(0,1fr) 15.5rem 4.2rem;
-  grid-template-columns: minmax(0, 1fr);
-  transition: transform 2s ease;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
+  -webkit-transition: -webkit-transform 2s ease; transition: transform 2s ease;
 }
 
 /* ---------- atas ---------- */
-.top { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.1rem solid var(--glaze); padding-bottom: 1.2rem; }
-.identity { display: flex; align-items: center; }
+.top {
+  -webkit-flex: none; flex: none; height: 6rem;
+  display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center;
+  border-bottom: 0.1rem solid var(--glaze); padding-bottom: 1.2rem;
+}
+.identity { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
 .identity > * + * { margin-left: 1.4rem; }
-.mark { width: 4rem; height: 4rem; color: var(--brass); flex: none; }
+.mark { width: 4rem; height: 4rem; color: var(--brass); -webkit-flex: none; flex: none; }
 #nama { font-size: 2.7rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
 #alamat { font-size: 1.25rem; color: var(--celadon); margin-top: 0.25rem; }
 .dates { text-align: right; }
@@ -54,73 +68,93 @@ body.preview { cursor: default; }
 #hijriah { font-size: 1.5rem; color: var(--celadon); margin-top: 0.2rem; }
 
 /* ---------- tengah ---------- */
-.middle { display: grid; grid-template-columns: minmax(0, 1fr) 36rem; gap: 3rem; align-items: center; min-height: 0; }
-.clockwrap { padding-left: 0.2rem; }
-.clock { display: flex; align-items: baseline; font-feature-settings: 'tnum' 1; font-variant-numeric: tabular-nums; line-height: 0.9; }
+.middle {
+  -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0;
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+}
+.clockwrap { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; padding-left: 0.2rem; }
+.clock { display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline; line-height: 0.9; }
 #hm { font-size: 15.5rem; font-weight: 800; letter-spacing: -0.045em; }
 #ss { font-size: 4.6rem; font-weight: 600; color: var(--celadon); margin-left: 1.4rem; width: 6rem; }
-.countdown { font-size: 2.3rem; font-weight: 500; color: var(--celadon); margin-top: 1.6rem; font-variant-numeric: tabular-nums; }
+.countdown { font-size: 2.3rem; font-weight: 500; color: var(--celadon); margin-top: 1.6rem; }
 .countdown b { color: var(--plaster); font-weight: 700; }
 .countdown.soon { color: var(--brass); }
 .countdown.soon b { color: var(--brass); }
 
 .panel {
-  align-self: stretch; margin: 2.4rem 0 2rem;
+  position: relative;
+  -webkit-flex: none; flex: none; width: 36rem;
+  -webkit-align-self: stretch; align-self: stretch;
+  margin: 1.4rem 0 1.2rem 3rem;
   background: var(--ink-2);
   border-left: 0.35rem solid var(--brass);
   border-radius: 0 1.2rem 1.2rem 0;
-  padding: 2rem 2.4rem 1.6rem;
-  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+  padding: 1.8rem 2.4rem 1.4rem;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  min-height: 0; overflow: hidden;
 }
-.slide { flex: 1; min-height: 0; overflow: hidden; transition: opacity .6s ease; }
+.slide { position: relative; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; overflow: hidden; -webkit-transition: opacity .6s ease; transition: opacity .6s ease; }
 .slide.out { opacity: 0; }
-.slide h3 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 1.2rem; }
-.slide .when { font-size: 1.25rem; color: var(--celadon); margin: -0.8rem 0 1.2rem; }
+/* isi slide yang lebih tinggi dari panel diperkecil otomatis (fitSlide di display.js) */
+.fit { -webkit-transform-origin: 0 0; transform-origin: 0 0; }
+.slide h3 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 1rem; }
+.slide .when { font-size: 1.25rem; color: var(--celadon); margin: -0.6rem 0 1rem; }
 
-.list { list-style: none; display: grid; gap: 1rem; }
-.list li { display: grid; grid-template-columns: 7.5rem 1fr; gap: 1.2rem; align-items: start; }
-.list .d { font-size: 1.2rem; font-weight: 700; color: var(--brass); padding-top: 0.15rem; line-height: 1.3; }
+.list { list-style: none; }
+.list li { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; }
+.list li + li { margin-top: 1rem; }
+.list li > div { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; }
+.list .d { -webkit-flex: none; flex: none; width: 7.5rem; margin-right: 1.2rem; font-size: 1.2rem; font-weight: 700; color: var(--brass); padding-top: 0.15rem; line-height: 1.3; }
 .list .d small { display: block; font-weight: 500; color: var(--celadon); font-size: 1.05rem; }
 .list .t { font-size: 1.5rem; font-weight: 700; line-height: 1.25; }
 .list .p { font-size: 1.2rem; color: var(--celadon); margin-top: 0.2rem; }
 .list li.today .d { color: var(--plaster); }
 
-.petugas { display: grid; gap: 1.2rem; }
-.petugas div { display: grid; grid-template-columns: 8rem 1fr; align-items: baseline; border-bottom: 0.08rem solid var(--glaze); padding-bottom: 0.9rem; }
-.petugas dt { font-size: 1.3rem; color: var(--celadon); }
-.petugas dd { font-size: 1.9rem; font-weight: 700; line-height: 1.2; }
+.petugas div { display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline; border-bottom: 0.08rem solid var(--glaze); padding-bottom: 0.9rem; }
+.petugas div + div { margin-top: 1.2rem; }
+.petugas dt { -webkit-flex: none; flex: none; width: 8rem; font-size: 1.3rem; color: var(--celadon); }
+.petugas dd { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; font-size: 1.9rem; font-weight: 700; line-height: 1.2; }
 
 .announce { font-size: 1.9rem; line-height: 1.45; font-weight: 500; }
 .quote { font-size: 2.1rem; line-height: 1.4; font-weight: 600; }
 .quote-src { font-size: 1.3rem; color: var(--brass); margin-top: 1.2rem; font-weight: 600; }
 
-.kas { display: grid; gap: 0.9rem; font-variant-numeric: tabular-nums; }
-.kas div { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.45rem; }
-.kas div span:first-child { color: var(--celadon); }
-.kas div b { font-weight: 700; }
-.kas .total { border-top: 0.1rem solid var(--glaze); padding-top: 0.9rem; margin-top: 0.3rem; }
-.kas .total b { font-size: 2.3rem; color: var(--brass); font-weight: 800; }
-.kas .note { font-size: 1.1rem; color: var(--celadon); }
+/* laporan kas: dibuat ringkas agar saldo akhir selalu terlihat */
+.kas > * + * { margin-top: 0.7rem; }
+.kas div { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: baseline; align-items: baseline; font-size: 1.45rem; line-height: 1.25; }
+.kas div span:first-child { color: var(--celadon); margin-right: 1rem; }
+.kas div b { font-weight: 700; white-space: nowrap; }
+.kas .total { border-top: 0.1rem solid var(--glaze); padding-top: 0.7rem; }
+.kas .total span:first-child { color: var(--plaster); font-weight: 700; }
+.kas .total b { font-size: 2.2rem; color: var(--brass); font-weight: 800; line-height: 1.15; }
+.kas .note { font-size: 1.1rem; line-height: 1.3; color: var(--celadon); }
 
-.dots { display: flex; margin-top: 1rem; }
+.dots { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; margin-top: 1rem; }
 .dots i + i { margin-left: 0.6rem; }
 .dots i { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--glaze); }
 .dots i.on { background: var(--brass); width: 2rem; border-radius: 0.35rem; }
 
 /* ---------- deretan waktu sholat: lengkung mihrab ---------- */
-.times { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 1.1rem; align-items: end; padding-bottom: 1.2rem; }
+.times {
+  -webkit-flex: none; flex: none; height: 15.5rem;
+  display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end;
+  padding-bottom: 1.2rem;
+}
 .arch {
   position: relative;
+  -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0;
   height: 13.6rem;
   border: 0.14rem solid var(--glaze);
   border-radius: 50% 50% 0.8rem 0.8rem / 34% 34% 0.8rem 0.8rem;
-  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  -webkit-align-items: center; align-items: center; -webkit-justify-content: flex-end; justify-content: flex-end;
   padding-bottom: 1.3rem;
   text-align: center;
 }
+.arch + .arch { margin-left: 1.1rem; }
 .arch .ar { font-family: 'Amiri', serif; font-size: 1.6rem; font-weight: 700; color: var(--celadon); line-height: 1; margin-bottom: 0.4rem; }
 .arch .nm { font-size: 1.55rem; font-weight: 700; }
-.arch .tm { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.05; margin-top: 0.2rem; }
+.arch .tm { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-top: 0.2rem; }
 .arch.minor { height: 11.6rem; }
 .arch.minor .tm { font-size: 2.9rem; }
 .arch.minor .nm { color: var(--celadon); font-weight: 600; }
@@ -128,7 +162,7 @@ body.preview { cursor: default; }
 .arch.next {
   background: var(--brass); border-color: var(--brass); color: var(--brass-ink);
   height: 15rem;
-  box-shadow: 0 0 3.5rem -0.6rem color-mix(in srgb, var(--brass) 55%, transparent);
+  box-shadow: 0 0 3.5rem -0.6rem rgba(217, 164, 65, 0.55);
 }
 .arch.next .ar, .arch.next .nm { color: var(--brass-ink); }
 .arch.next .tm { font-size: 3.9rem; letter-spacing: -0.04em; }
@@ -138,11 +172,19 @@ body.preview { cursor: default; }
 }
 
 /* ---------- teks berjalan ---------- */
-.ticker { display: flex; align-items: center; border-top: 0.1rem solid var(--glaze); margin: 0 -2.8rem; padding: 0 2.8rem; background: var(--ink-2); }
-.ticker-track { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; }
-.ticker-text { display: inline-block; font-size: 1.6rem; font-weight: 500; padding-left: 100%; animation: ticker linear infinite; }
+.ticker {
+  -webkit-flex: none; flex: none; height: 4.2rem;
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center;
+  border-top: 0.1rem solid var(--glaze); margin: 0 -2.8rem; padding: 0 2.8rem; background: var(--ink-2);
+}
+.ticker-track { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; overflow: hidden; white-space: nowrap; }
+.ticker-text {
+  display: inline-block; font-size: 1.6rem; font-weight: 500; padding-left: 100%;
+  -webkit-animation: ticker 30s linear infinite; animation: ticker 30s linear infinite;
+}
 .ticker-text .sep { color: var(--brass); margin: 0 1.6rem; }
-@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+@-webkit-keyframes ticker { from { -webkit-transform: translateX(0); transform: translateX(0); } to { -webkit-transform: translateX(-100%); transform: translateX(-100%); } }
+@keyframes ticker { from { -webkit-transform: translateX(0); transform: translateX(0); } to { -webkit-transform: translateX(-100%); transform: translateX(-100%); } }
 .admin-hint { margin-left: 2rem; font-size: 1.05rem; color: var(--celadon); white-space: nowrap; }
 .admin-hint:empty { display: none; }
 .admin-hint.warn { color: #E58B76; font-weight: 600; }
@@ -151,16 +193,15 @@ body.preview { cursor: default; }
 .bg { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-size: cover; background-position: center; z-index: 0; }
 .bg::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: var(--ink); opacity: .86; }
 #stage { z-index: 1; }
-.panel { position: relative; }
 .foto { position: absolute; top: 0; right: 0; bottom: 0; left: 0; margin: 0; }
 .foto img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 0.6rem; }
-.slide { position: relative; }
 
 /* ---------- layar penuh ---------- */
 .overlay {
   position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 10;
   background: var(--ink);
-  display: flex; align-items: center; justify-content: center; text-align: center;
+  display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
+  text-align: center;
 }
 .overlay[hidden] { display: none; }
 .overlay::before { /* pola bintang delapan, sangat samar */
@@ -171,25 +212,26 @@ body.preview { cursor: default; }
 .ov-inner { position: relative; width: 80rem; }
 .ov-arab { font-family: 'Amiri', serif; font-weight: 700; font-size: 5rem; color: var(--brass); line-height: 1.2; }
 .ov-title { font-size: 4.2rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.6rem; }
-.ov-big { font-size: 17rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; font-variant-numeric: tabular-nums; margin: 1.6rem 0 1rem; }
+.ov-big { font-size: 17rem; font-weight: 800; letter-spacing: -0.05em; line-height: 1; margin: 1.6rem 0 1rem; }
 .ov-big:empty { display: none; }
 .ov-bar { height: 0.6rem; width: 46rem; margin: 0 auto 2rem; background: var(--glaze); border-radius: 0.3rem; overflow: hidden; }
-.ov-bar span { display: block; height: 100%; width: 0; background: var(--brass); transition: width 1s linear; }
+.ov-bar span { display: block; height: 100%; width: 0; background: var(--brass); -webkit-transition: width 1s linear; transition: width 1s linear; }
 .ov-bar.off { visibility: hidden; }
 .ov-sub { font-size: 2.3rem; line-height: 1.45; color: var(--celadon); font-weight: 500; max-width: 64rem; margin: 0 auto; }
 .ov-sub b { color: var(--plaster); font-weight: 700; }
-.ov-clock { font-size: 2rem; font-weight: 700; margin-top: 2.6rem; font-variant-numeric: tabular-nums; color: var(--celadon); }
+.ov-clock { font-size: 2rem; font-weight: 700; margin-top: 2.6rem; color: var(--celadon); }
 
 .overlay.mode-clock { z-index: 40; }
 .overlay.mode-clock .ov-title { color: var(--brass); }
 .overlay.mode-clock .ov-sub { text-align: left; font-size: 2rem; }
-.fix { margin: 2rem 0 0 2.4rem; display: grid; grid-gap: 0.9rem; color: var(--plaster); }
+.fix { margin: 2rem 0 0 2.4rem; color: var(--plaster); }
+.fix li + li { margin-top: 0.9rem; }
 .overlay.mode-iqomah .ov-big { color: var(--brass); }
 .overlay.mode-iqomah.final .ov-big { color: var(--plaster); }
 .overlay.mode-sholat { background: var(--night); }
 .overlay.mode-sholat::before { opacity: .03; }
-.overlay.mode-sholat .ov-title { font-size: 3.2rem; color: color-mix(in srgb, var(--plaster) 70%, transparent); }
-.overlay.mode-sholat .ov-sub, .overlay.mode-sholat .ov-clock { color: color-mix(in srgb, var(--celadon) 60%, transparent); }
+.overlay.mode-sholat .ov-title { font-size: 3.2rem; opacity: .7; }
+.overlay.mode-sholat .ov-sub, .overlay.mode-sholat .ov-clock { opacity: .6; }
 .overlay.mode-sholat .ov-arab { font-size: 3.6rem; opacity: .6; }
 
 /* pita menjelang adzan, menggantikan hitung mundur biasa */
@@ -197,13 +239,13 @@ body.preview { cursor: default; }
 .countdown.pre b { margin-left: 1rem; color: var(--brass-ink); font-size: 2.8rem; font-weight: 800; }
 
 /* redup malam */
-.dim { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: #000; pointer-events: none; z-index: 20; transition: opacity 3s; }
+.dim { position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: #000; pointer-events: none; z-index: 20; -webkit-transition: opacity 3s; transition: opacity 3s; }
 .dim[hidden] { display: none; }
 
 /* petunjuk pratinjau */
-.preview-note { position: fixed; left: 50%; transform: translateX(-50%); top: 0.6rem; z-index: 30; font: 600 0.95rem 'Jakarta', sans-serif; background: var(--brass); color: var(--brass-ink); padding: 0.5rem 0.9rem; border-radius: 0.5rem; text-decoration: none; }
+.preview-note { position: fixed; left: 50%; -webkit-transform: translateX(-50%); transform: translateX(-50%); top: 0.6rem; z-index: 30; font: 600 0.95rem 'Jakarta', sans-serif; background: var(--brass); color: var(--brass-ink); padding: 0.5rem 0.9rem; border-radius: 0.5rem; text-decoration: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ticker-text { animation-duration: 0s !important; padding-left: 0; }
-  #stage, .slide, .dim { transition: none; }
+  .ticker-text { -webkit-animation-duration: 0s !important; animation-duration: 0s !important; padding-left: 0; }
+  #stage, .slide, .dim { -webkit-transition: none; transition: none; }
 }

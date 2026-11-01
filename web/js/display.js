@@ -154,7 +154,7 @@
     requestAnimationFrame(function () {
       var rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 20;
       var w = el.scrollWidth / rem;
-      el.style.animationDuration = Math.max(20, w / 9) + 's';
+      el.style.webkitAnimationDuration = el.style.animationDuration = Math.max(20, w / 9) + 's';
     });
   }
 
@@ -236,13 +236,39 @@
     return s;
   }
 
+  // Bila isi slide lebih tinggi dari panel (mis. laporan kas dengan catatan,
+  // pengumuman panjang, atau layar box yang bukan 16:9), perkecil seluruh isinya
+  // supaya baris terakhir — seperti saldo kas — tidak terpotong.
+  function scaleFit(f, s) {
+    var t = s < 1 ? 'scale(' + s + ')' : '';
+    f.style.width = s < 1 ? (100 / s) + '%' : '';
+    f.style.webkitTransform = t;
+    f.style.transform = t;
+  }
+  function fitSlide(el) {
+    var f = el.firstChild;
+    if (!f || f.className !== 'fit') return;
+    scaleFit(f, 1);
+    var avail = el.clientHeight, h = f.offsetHeight, s = 1;
+    if (!avail || !h || h <= avail) return;
+    for (var n = 0; n < 4 && h * s > avail; n++) {
+      s = Math.max(0.5, avail / h);
+      scaleFit(f, s);
+      h = f.offsetHeight;
+      if (s === 0.5) break;
+    }
+  }
+
   function showSlide(i) {
     var el = $('slide');
     slideIdx = (i + slides.length) % slides.length;
     el.classList.add('out');
     setTimeout(function () {
-      el.innerHTML = slides[slideIdx];
+      el.innerHTML = '<div class="fit">' + slides[slideIdx] + '</div>';
+      fitSlide(el);
       el.classList.remove('out');
+      // ulangi setelah huruf selesai dimuat (ukuran teks bisa berubah)
+      setTimeout(function () { fitSlide(el); }, 1500);
     }, 600);
     $('dots').innerHTML = slides.length > 1 ? slides.map(function (_, j) { return '<i' + (j === slideIdx ? ' class="on"' : '') + '></i>'; }).join('') : '';
   }

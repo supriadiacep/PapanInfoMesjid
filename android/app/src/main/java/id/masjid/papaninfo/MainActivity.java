@@ -111,7 +111,14 @@ public class MainActivity extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onReceivedError(WebView v, WebResourceRequest req, WebResourceError err) {
-                if (Build.VERSION.SDK_INT >= 21 && req.isForMainFrame()) retryLater();
+                if (req.isForMainFrame()) retryLater();
+            }
+
+            // Android 5.x (API 21–22) hanya memanggil versi lama ini
+            @SuppressWarnings("deprecation")
+            @Override
+            public void onReceivedError(WebView v, int code, String desc, String url) {
+                if (Build.VERSION.SDK_INT < 23) retryLater();
             }
 
             @Override
