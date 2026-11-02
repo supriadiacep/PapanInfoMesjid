@@ -37,7 +37,13 @@
     if (cb) onChange = cb;
     var p = (conf && conf.pusat) || {};
     var aktif = !!p.aktif, server = p.server || 'https://tv.pintarinovasi.co.id';
-    if (st.mulai && aktif === st.aktif && server === st.server) return;
+    var diubahLama = st.lokal && st.lokal.diubah;
+    st.lokal = conf; // pengaturan papan info di box (untuk sinkron dengan pusat)
+    if (st.mulai && aktif === st.aktif && server === st.server) {
+      // pengurus baru menyimpan dari HP: segera kirim ke pusat
+      if (aktif && st.paired && conf && conf.diubah && conf.diubah !== diubahLama) muat();
+      return;
+    }
     stop();
     st.mulai = true; st.aktif = aktif; st.server = server;
     st.key = ''; st.code = ''; st.paired = false; st.cfg = null;
@@ -124,7 +130,38 @@
       return;
     }
     sambungWs();
+    sinkronMasjid(c);
     if (lama !== c.version || baruTersambung) { simpanMedia(); onChange(); }
+  }
+
+  // ---------- pengaturan papan info: sama antara box dan pusat ----------
+  // Yang terbaru menang: diubah dari pusat -> ditulis ke box; diubah dari HP pengurus -> dikirim ke pusat.
+  // Tidak ikut disamakan: sambungan pusat, foto (file di box), dan koreksi jam box.
+  var sedangKirim = false;
+  function sinkronMasjid(c) {
+    var loc = c.location, lokal = st.lokal;
+    if (!loc || loc.kind !== 'masjid' || !lokal) return;
+    var s = loc.settings || {}, P = +s.masjid_diubah || 0, L = +lokal.diubah || 0;
+    var S = global.MasjidStore;
+    if (s.masjid && P > L + 2000) {
+      var baru = S.merge(S.clone(S.DEFAULTS), s.masjid);
+      baru.pusat = lokal.pusat;
+      if (lokal.tampilan && lokal.tampilan.foto) baru.tampilan.foto = lokal.tampilan.foto;
+      if (lokal.sholat) baru.sholat.clockOffsetSec = lokal.sholat.clockOffsetSec || 0;
+      baru.diubah = P;
+      st.lokal = baru;
+      S.terapkanPusat(baru); // layar memuat ulang pengaturan sendiri dalam ±10 detik
+    } else if (L > 0 && (!s.masjid || L > P + 2000) && !sedangKirim) {
+      // L = 0: box belum pernah diatur (masih data contoh) -> tidak dikirim ke pusat
+      var kirim = S.clone(lokal);
+      delete kirim.pusat; delete kirim.diubah;
+      if (kirim.tampilan) delete kirim.tampilan.foto;
+      if (kirim.sholat) delete kirim.sholat.clockOffsetSec;
+      sedangKirim = true;
+      req('/api/player/masjid', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: kirim, diubah: L || 1 }) })
+        .then(function () { sedangKirim = false; }, function () { sedangKirim = false; });
+      return;
+    }
   }
 
   // ---------- perubahan langsung dari pusat ----------

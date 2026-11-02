@@ -21,7 +21,20 @@
   }
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-  function markDirty() { dirty = true; $('saveBtn').classList.add('dirty'); $('saveBtn').textContent = 'Simpan perubahan'; }
+  function markDirty() { dirty = true; $('saveBtn').classList.add('dirty'); $('saveBtn').textContent = 'Simpan perubahan'; kabariPusat('pratinjau'); }
+  // dibuka dari panel pusat (dalam bingkai): kirim isi terbaru agar pratinjau layar langsung berubah
+  var PUSAT = MasjidStore.pusatAdmin;
+  function kabariPusat(jenis) {
+    if (!PUSAT || window.parent === window) return;
+    clearTimeout(kabariPusat._t);
+    kabariPusat._t = setTimeout(function () {
+      try { window.parent.postMessage({ masjidtv: jenis, config: cfg }, location.origin); } catch (e) { }
+    }, jenis === 'pratinjau' ? 400 : 0);
+  }
+  // pratinjau baru dimuat ulang (mis. ganti jam): kirim lagi isi yang sedang diketik
+  if (PUSAT) window.addEventListener('message', function (e) {
+    if (e.origin === location.origin && e.data && e.data.masjidtv === 'minta' && cfg) kabariPusat('pratinjau');
+  });
   function toast(msg, bad) {
     var t = $('toast'); t.textContent = msg; t.className = 'toast' + (bad ? ' bad' : ''); t.hidden = false;
     clearTimeout(toast._t); toast._t = setTimeout(function () { t.hidden = true; }, bad ? 5000 : 2600);
@@ -79,7 +92,10 @@
     { id: 'tampilan', label: 'Tampilan', render: renderTampilan },
     { id: 'pusat', label: 'Pusat', render: renderPusat },
     { id: 'sistem', label: 'Sistem', render: renderSistem }
-  ];
+  ].filter(function (s) {
+    // dari panel pusat: bagian khusus box (PIN, jam box, sambungan pusat) tidak ditampilkan
+    return !MasjidStore.pusatAdmin || (s.id !== 'pusat' && s.id !== 'sistem');
+  });
 
   function renderMasjid() {
     return '<h2>Data masjid</h2><p class="section-intro">Nama dan alamat tampil di bagian atas layar. Koordinat dipakai untuk menghitung waktu sholat tanpa internet.</p>' +
@@ -503,7 +519,9 @@
     var b = $('saveBtn'); b.disabled = true;
     MasjidStore.save(cfg, pin).then(function () {
       dirty = false; b.classList.remove('dirty'); b.textContent = 'Simpan';
-      toast(server ? 'Tersimpan. Layar TV diperbarui dalam beberapa detik.' : 'Tersimpan di browser ini.');
+      toast(PUSAT ? 'Tersimpan di pusat. Semua layar di masjid ini ikut berubah dalam beberapa detik.'
+        : server ? 'Tersimpan. Layar TV diperbarui dalam beberapa detik.' : 'Tersimpan di browser ini.');
+      kabariPusat('tersimpan');
     }).catch(function (e) { toast(e.message || 'Gagal menyimpan.', true); })
       .then(function () { b.disabled = false; });
   });
@@ -535,8 +553,10 @@
     $('login').hidden = true; $('app').hidden = false;
     $('tabs').innerHTML = SECTIONS.map(function (s) { return '<button type="button" class="tab" role="tab" data-tab="' + s.id + '">' + esc(s.label) + '</button>'; }).join('');
     $('appTitle').textContent = cfg.masjid.nama;
-    $('modeNote').textContent = server ? 'Pengaturan papan info' : 'Mode pratinjau: tersimpan di browser ini';
+    $('modeNote').textContent = PUSAT ? 'Diatur dari pusat: berlaku untuk semua layar di masjid ini'
+      : server ? 'Pengaturan papan info' : 'Mode pratinjau: tersimpan di browser ini';
     if (onTv) $('backBtn').textContent = 'Kembali ke layar';
+    if (PUSAT) $('backBtn').style.display = 'none'; // pratinjau tampil di samping halaman ini
     show('masjid');
   }
 
@@ -551,12 +571,18 @@
   MasjidStore.load().then(function (r) {
     cfg = r.config; server = r.server;
     $('loginTitle').textContent = cfg.masjid.nama;
+    if (PUSAT) { start(); kabariPusat('pratinjau'); return; } // sudah masuk lewat login pusat
     MasjidStore.info().then(function (i) {
       var lsPin = null; try { lsPin = localStorage.getItem('masjidtv-pin'); } catch (e) {}
       if ((i.server && i.defaultPin) || (!i.server && !lsPin)) $('loginHint').textContent = 'PIN awal: 1234. Segera ganti di bagian Sistem.';
     });
     var saved = null; try { saved = sessionStorage.getItem('masjidtv-pin'); } catch (e) {}
     (saved ? tryLogin(saved) : Promise.resolve(false)).then(function (ok) { if (ok) start(); else $('pin').focus(); });
+  })['catch'](function (e) {
+    // mode pusat: belum login / tidak berhak
+    $('loginTitle').textContent = 'Tidak bisa membuka pengaturan';
+    $('loginErr').textContent = e.message || String(e);
+    $('loginForm').querySelector('button[type=submit]').hidden = true;
   });
 
   // ---------- lupa PIN ----------

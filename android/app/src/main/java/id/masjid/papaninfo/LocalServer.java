@@ -237,6 +237,15 @@ public class LocalServer {
                 send(out, 200, "application/json", "{\"ok\":true}".getBytes(UTF8));
                 return;
             }
+            if (path.equals("/api/config-pusat") && r.method.equals("POST")) {
+                // pengaturan kiriman server pusat, ditulis oleh layar TV sendiri (bukan dari HP, jadi tanpa PIN)
+                if (!r.local) { send(out, 403, "application/json", "{\"error\":\"local\"}".getBytes(UTF8)); return; }
+                String s = new String(r.body, UTF8).trim();
+                if (!s.startsWith("{") || !s.endsWith("}")) { send(out, 400, "application/json", "{\"error\":\"json\"}".getBytes(UTF8)); return; }
+                synchronized (lock) { writeAtomic(configFile, s.getBytes(UTF8)); }
+                send(out, 200, "application/json", "{\"ok\":true}".getBytes(UTF8));
+                return;
+            }
             if (path.equals("/api/pin") && r.method.equals("POST")) {
                 if (!checkPin(r)) { send(out, 403, "application/json", "{\"error\":\"pin\"}".getBytes(UTF8)); return; }
                 String np = new String(r.body, UTF8).trim();

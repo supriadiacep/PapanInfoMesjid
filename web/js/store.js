@@ -83,6 +83,12 @@
   var LS_PIN = 'masjidtv-pin';
   var serverMode = null; // null = belum dicek
 
+  // Mode pusat: halaman ini dibuka dari panel server pusat (mis. tv.pintarinovasi.co.id/papan/admin.html?pusat=12).
+  // Pengaturan dibaca & disimpan ke pusat untuk lokasi masjid itu (login pusat, tanpa PIN).
+  var PM = /[?&]pusat=(\d+)/.exec(global.location.search);
+  var pusatId = PM ? PM[1] : null;
+  function pusatUrl() { return '/api/locations/' + pusatId + '/masjid'; }
+
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
   // gabungkan data tersimpan di atas bawaan (array diganti utuh)
@@ -100,7 +106,7 @@
 
   function detect() {
     if (serverMode !== null) return Promise.resolve(serverMode);
-    if (!/^https?:$/.test(location.protocol) || !global.fetch) { serverMode = false; return Promise.resolve(false); }
+    if (pusatId || !/^https?:$/.test(location.protocol) || !global.fetch) { serverMode = false; return Promise.resolve(false); }
     return fetch('/api/info', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) { serverMode = !!(j && j.app === 'masjid-tv'); return serverMode; })
@@ -110,7 +116,30 @@
   function lsGet(key) { try { return global.localStorage.getItem(key); } catch (e) { return null; } }
   function lsSet(key, v) { try { global.localStorage.setItem(key, v); return true; } catch (e) { return false; } }
 
+  function loadPusat() {
+    return fetch(pusatUrl(), { cache: 'no-store', credentials: 'same-origin' })
+      .then(function (r) {
+        if (r.status === 401) throw new Error('Silakan masuk ke panel pusat terlebih dahulu');
+        if (!r.ok) throw new Error('Gagal membaca pengaturan dari pusat (' + r.status + ')');
+        return r.json();
+      })
+      .then(function (j) {
+        var base = clone(DEFAULTS);
+        if (!j.config) { // belum pernah diatur: mulai dari data lokasi di pusat
+          base.masjid.nama = j.name || base.masjid.nama;
+          base.masjid.alamat = j.address || base.masjid.alamat;
+          if (j.lat != null && j.lon != null) { base.masjid.lat = j.lat; base.masjid.lng = j.lon; }
+          // contoh bawaan (pengajian, petugas, kas) dikosongkan agar tidak terkirim ke layar sungguhan
+          base.pengajian = []; base.jumat = []; base.info.pengumuman = [];
+          base.kas.tampil = false;
+        }
+        var raw = JSON.stringify(j.config || {});
+        return { config: merge(base, j.config || {}), raw: raw, server: false, pusat: true, diubah: j.diubah, sumber: j.sumber };
+      });
+  }
+
   function load() {
+    if (pusatId) return loadPusat();
     return detect().then(function (server) {
       if (server) {
         return fetch('/api/config', { cache: 'no-store' })
@@ -127,6 +156,19 @@
   }
 
   function save(config, pin) {
+    if (pusatId) {
+      return fetch(pusatUrl(), {
+        method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: config }),
+      }).then(function (r) {
+        if (r.status === 401) throw new Error('Sesi pusat habis. Muat ulang halaman dan masuk lagi.');
+        if (r.status === 403) throw new Error('Anda tidak punya hak mengubah masjid ini');
+        if (!r.ok) throw new Error('Gagal menyimpan ke pusat (' + r.status + ')');
+        return true;
+      });
+    }
+    // waktu perubahan: dipakai menentukan mana yang terbaru antara HP pengurus dan server pusat
+    config.diubah = Date.now();
     var body = JSON.stringify(config);
     return detect().then(function (server) {
       if (server) {
@@ -143,6 +185,7 @@
   }
 
   function checkPin(pin) {
+    if (pusatId) return Promise.resolve(true); // sudah masuk lewat login pusat
     return detect().then(function (server) {
       if (server) {
         return fetch('/api/check', { method: 'POST', headers: { 'X-Pin': pin || '' } }).then(function (r) { return r.ok; });
@@ -211,11 +254,12 @@
   var LS_PHOTO = 'masjidtv-photo';
   function photoUrl(cfg) {
     var f = cfg && cfg.tampilan && cfg.tampilan.foto;
-    if (!f || !f.ada) return null;
+    if (!f || !f.ada || pusatId) return null; // foto tersimpan di box masing-masing, bukan di pusat
     if (serverMode) return '/foto-masjid.jpg?v=' + (f.versi || 0);
     return lsGet(LS_PHOTO);
   }
   function uploadPhoto(blob, dataUrl, pin) {
+    if (pusatId) return Promise.reject(new Error('Foto masjid diunggah dari pengaturan di masjid (HP atau remote), bukan dari pusat.'));
     return detect().then(function (server) {
       if (server) {
         return fetch('/api/photo', { method: 'POST', headers: { 'X-Pin': pin || '', 'Content-Type': 'image/jpeg' }, body: blob })
@@ -270,6 +314,15 @@
       return lsSet(LS_PUSAT, body);
     });
   }
+  // pengaturan baru dari server pusat ditulis oleh layar TV sendiri (tanpa PIN, hanya dari box)
+  function terapkanPusat(config) {
+    var body = JSON.stringify(config);
+    return detect().then(function (server) {
+      if (server) return fetch('/api/config-pusat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body }).then(function (r) { return r.ok; });
+      return lsSet(LS_KEY, body);
+    });
+  }
+
   function pusatReset(pin) {
     return detect().then(function (server) {
       if (server) {
@@ -282,7 +335,8 @@
   }
 
   global.MasjidStore = {
-    pusatGet: pusatGet, pusatSet: pusatSet, pusatReset: pusatReset, LS_PUSAT: LS_PUSAT,
+    pusatGet: pusatGet, pusatSet: pusatSet, pusatReset: pusatReset, LS_PUSAT: LS_PUSAT, terapkanPusat: terapkanPusat,
+    pusatAdmin: pusatId, // terisi bila halaman dibuka dari panel pusat
     sleepRisk: sleepRisk, fmtDuration: fmtDuration,
     resetPin: resetPin, clock: clock, syncClock: syncClock, photoUrl: photoUrl, uploadPhoto: uploadPhoto, deletePhoto: deletePhoto, LS_PHOTO: LS_PHOTO,
     DEFAULTS: DEFAULTS, LS_KEY: LS_KEY,

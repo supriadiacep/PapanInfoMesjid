@@ -482,7 +482,18 @@
   MasjidStore.load().then(function (r) {
     server = r.server;
     applyConfig(r.config, r.raw);
-    if (!server) {
+    var pratinjauPusat = !!MasjidStore.pusatAdmin;
+    if (pratinjauPusat) {
+      // pratinjau di panel pusat: isi berubah langsung saat pengaturan di sebelahnya diketik
+      window.addEventListener('message', function (e) {
+        var d = e.data;
+        if (e.origin !== location.origin || !d || (d.masjidtv !== 'pratinjau' && d.masjidtv !== 'tersimpan') || !d.config) return;
+        var c = MasjidStore.merge(MasjidStore.clone(MasjidStore.DEFAULTS), d.config);
+        c.pusat = { aktif: false }; // pratinjau tidak menyambung ke pusat sebagai layar
+        applyConfig(c, JSON.stringify(d.config));
+      });
+    }
+    if (!server && !pratinjauPusat) {
       document.body.classList.add('preview');
       var a = document.createElement('a');
       a.className = 'preview-note'; a.href = 'admin.html'; a.textContent = 'Buka pengaturan';
@@ -492,6 +503,6 @@
     tick();
     showAdminHint(); setInterval(showAdminHint, 60000);
     setInterval(antiBurnIn, 5 * 60000);
-    setTimeout(poll, 10000);
+    if (!pratinjauPusat) setTimeout(poll, 10000); // pratinjau pusat diperbarui lewat pesan dari halaman pengaturan
   });
 })();
