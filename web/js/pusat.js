@@ -116,6 +116,13 @@
     st.paired = true; st.code = '';
     if (baruTersambung) { simpanKunci(); setTimeout(lapor, 2000); }
     lsSet(LS_CFG, JSON.stringify({ server: st.server, cfg: c }));
+    // layar diatur sebagai "TV promosi" di pusat: pindah ke pemutar promosi (aplikasi yang sama).
+    // Hanya saat pusat terjangkau, agar box yang menyala tanpa internet tetap menampilkan papan ini.
+    if (c.screen && c.screen.mode === 'promosi' && /\/index\.html$|\/$/.test(location.pathname)) {
+      location.href = base() + '/putar/?kunci=' + encodeURIComponent(st.key) +
+        '&kembali=' + encodeURIComponent(location.origin + '/index.html');
+      return;
+    }
     sambungWs();
     if (lama !== c.version || baruTersambung) { simpanMedia(); onChange(); }
   }
