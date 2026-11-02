@@ -146,3 +146,9 @@ body.mode-pusat {
   color-scheme: light;
 }
 body.mode-pusat .toast.bad { color: #fff; }
+/* dari panel pusat: semua bagian terlihat (2 baris), tanpa digeser */
+body.mode-pusat .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.45rem; overflow: visible; padding: 0.75rem 1rem; }
+body.mode-pusat .tab { min-height: 42px; padding: 0.4rem 0.5rem; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); text-align: center; line-height: 1.2; }
+body.mode-pusat .tab:hover { background: var(--bg-3); }
+body.mode-pusat .tab[aria-selected="true"] { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
+@media (max-width: 420px) { body.mode-pusat .tabs { grid-template-columns: repeat(2, 1fr); } }
