@@ -77,10 +77,8 @@
     var k = dayKey(d);
     if (!cache[k]) {
       var s = cfg.sholat, m = cfg.masjid;
-      cache[k] = PrayTime.compute(d, {
-        lat: m.lat, lng: m.lng, tz: m.tz, elev: m.elev,
-        fajr: s.fajr, isha: s.isha, asr: s.asr, ihtiyat: s.ihtiyat, imsak: s.imsak, adjust: s.adjust
-      });
+      // jadwal manual (dari tabel resmi) bila diisi untuk tanggal ini, selain itu dihitung
+      cache[k] = MasjidJadwal.jadwalHari(cfg, d);
     }
     return cache[k];
   }

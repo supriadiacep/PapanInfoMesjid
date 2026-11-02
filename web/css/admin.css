@@ -152,3 +152,19 @@ body.mode-pusat .tab { min-height: 42px; padding: 0.4rem 0.5rem; border-radius: 
 body.mode-pusat .tab:hover { background: var(--bg-3); }
 body.mode-pusat .tab[aria-selected="true"] { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
 @media (max-width: 420px) { body.mode-pusat .tabs { grid-template-columns: repeat(2, 1fr); } }
+
+/* jadwal sholat manual */
+.jm-alat { display: flex; gap: 0.8rem; align-items: flex-end; flex-wrap: wrap; margin: 0.8rem 0; }
+.jm-alat .field { min-width: 180px; }
+.jm-info { color: var(--muted); font-size: 0.92rem; margin: 0.4rem 0 0.6rem; }
+.table-wrap.jm { max-height: 460px; overflow: auto; }
+.table-wrap.jm thead th { position: sticky; top: 0; background: var(--bg-2); z-index: 1; }
+.table-wrap.jm td { padding: 0.2rem 0.15rem; }
+.table-wrap.jm th { padding-left: 0.3rem; padding-right: 0.3rem; font-size: 0.85rem; }
+.table-wrap.jm td:first-child { white-space: nowrap; padding-left: 0.7rem; }
+input.jm-c { width: 3.9rem; min-height: 32px; padding: 0.1rem 0.2rem; font-size: 0.92rem; text-align: center; font-variant-numeric: tabular-nums; }
+.jm-c.auto { color: var(--muted); }
+.jm-c.manual { color: var(--brass); font-weight: 700; border-color: var(--brass); }
+span.jm-c { display: inline-block; padding: 0 0.35rem; border: 1px solid var(--line); border-radius: 6px; }
+span.jm-c.manual { border-color: var(--brass); }
+.jm-ket { color: var(--muted); font-size: 0.88rem; margin-top: 0.6rem; }

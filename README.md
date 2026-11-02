@@ -107,7 +107,7 @@ yang memegang remote di masjid yang bisa mengatur ulang PIN. Isi papan info tida
 | Bagian | Isinya |
 |---|---|
 | Masjid | Nama, alamat, koordinat, zona waktu, foto masjid, tabel jadwal 7 hari |
-| Waktu sholat | Koreksi menit per waktu, kriteria Kemenag, koreksi jam & tanggal Hijriah |
+| Waktu sholat | Koreksi menit per waktu, kriteria Kemenag, koreksi jam & tanggal Hijriah, **jadwal manual** per tanggal (edit di tabel, atau unduh template lalu unggah CSV/Excel) |
 | Adzan & iqomah | Pengingat menjelang adzan, lama iqomah per waktu, layar gelap saat sholat, lama khutbah Jumat |
 | Pengajian | Kajian rutin mingguan atau bertanggal |
 | Petugas Jumat | Khatib, imam, muadzin per tanggal |

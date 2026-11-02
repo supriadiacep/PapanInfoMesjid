@@ -8,6 +8,7 @@
   var WAJIB = [['subuh', 'Subuh'], ['dzuhur', 'Dzuhur'], ['ashar', 'Ashar'], ['maghrib', 'Maghrib'], ['isya', 'Isya']];
 
   var cfg = null, pin = '', server = false, dirty = false, current = 'masjid';
+  var jmBulan = (function () { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() < 9 ? '0' : '') + (d.getMonth() + 1); })();
   var onTv = !!window.Android || /MasjidTV/.test(navigator.userAgent);
   if (MasjidStore.pusatAdmin) document.body.classList.add('mode-pusat');
   if (onTv) document.body.classList.add('on-tv');
@@ -136,8 +137,99 @@
       group('Jam dan tanggal', '',
         field({ path: 'sholat.clockOffsetSec', label: 'Koreksi jam layar (detik)', type: 'number', step: 1, help: 'Jika jam box selisih dengan jam yang benar' }) +
         field({ path: 'sholat.hijriOffset', label: 'Koreksi tanggal Hijriah (hari)', type: 'number', min: -2, max: 2, step: 1, help: 'Sesuaikan dengan keputusan Kemenag' }) +
-        field({ path: 'sholat.hijriMaghrib', label: 'Ganti tanggal Hijriah setelah Maghrib', type: 'check' }));
+        field({ path: 'sholat.hijriMaghrib', label: 'Ganti tanggal Hijriah setelah Maghrib', type: 'check' })) +
+      '<div class="group" id="jadwalManual"><h3>Jadwal manual dari tabel resmi</h3>' +
+      '<p>Agar sama persis dengan jadwal Kemenag/MUI setempat, isi jadwal per tanggal: langsung di tabel di bawah, atau unduh template lalu unggah kembali (CSV atau Excel). Tanggal yang tidak diisi tetap dihitung otomatis.</p>' +
+      '<div class="grid wide">' + field({ path: 'sholat.manualAktif', label: 'Pakai jadwal manual untuk tanggal yang sudah diisi', type: 'check' }) + '</div>' +
+      '<div class="jm-alat"><div class="field"><label for="jmBulan">Bulan yang ditampilkan</label><input type="month" id="jmBulan" value="' + jmBulan + '"></div>' +
+      '<div class="btn-row">' +
+      (onTv ? '' : '<button type="button" class="btn" id="jmTplBulan">Unduh template bulan ini</button><button type="button" class="btn" id="jmTplTahun">Unduh template setahun</button>') +
+      '<label class="btn primary" for="jmFile">Unggah CSV / Excel</label><input type="file" id="jmFile" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>' +
+      '<button type="button" class="btn danger" id="jmHapus">Hapus jadwal manual bulan ini</button></div></div>' +
+      '<p class="jm-info" id="jmInfo"></p><div id="jmTabel"></div>' +
+      '<p class="jm-ket"><span class="jm-c manual">00:00</span> diisi manual · <span class="jm-c auto">00:00</span> hitungan otomatis. Ubah jam di tabel lalu tekan <b>Simpan</b>; kosongkan sel untuk kembali ke hitungan.</p></div>';
   }
+
+  // ---------- jadwal manual: tabel per bulan ----------
+  function jmHari(tg) { return (cfg.jadwalManual = cfg.jadwalManual || {})[tg]; }
+  function renderJadwal() {
+    var el = $('jmTabel'); if (!el) return;
+    var p = jmBulan.split('-'), th = +p[0], bl = +p[1] - 1, W = MasjidJadwal.WAKTU;
+    var html = '<div class="table-wrap jm"><table><thead><tr><th>Tanggal</th>' + W.map(function (w) { return '<th>' + MasjidJadwal.JUDUL[w] + '</th>'; }).join('') + '<th></th></tr></thead><tbody>';
+    var hariIni = ymd(new Date()), isiBulan = 0;
+    for (var d = new Date(th, bl, 1); d.getMonth() === bl; d = new Date(th, bl, d.getDate() + 1)) {
+      var tg = ymd(d), man = jmHari(tg) || {}, auto = MasjidJadwal.hitung(cfg, d), adaMan = false;
+      var sel = W.map(function (w) {
+        var m = man[w] && MasjidJadwal.keMenit(man[w]) != null;
+        if (m) adaMan = true;
+        // kotak teks jam 24 jam (bukan type=time: di sebagian HP tampil AM/PM dan terlalu lebar)
+        return '<td><input type="text" inputmode="numeric" maxlength="5" placeholder="hh:mm" class="jm-c ' + (m ? 'manual' : 'auto') + '" data-jm="' + tg + '|' + w + '" value="' + (m ? man[w] : PrayTime.fmt(auto[w])) + '" aria-label="' + MasjidJadwal.JUDUL[w] + ' ' + tg + '"></td>';
+      }).join('');
+      if (adaMan) isiBulan++;
+      html += '<tr' + (tg === hariIni ? ' class="today"' : '') + '><td>' + HARI[d.getDay()].slice(0, 3) + ' ' + d.getDate() + '</td>' + sel +
+        '<td>' + (adaMan ? '<button type="button" class="icon-btn" data-jmreset="' + tg + '" title="Kembali ke hitungan otomatis">↺</button>' : '') + '</td></tr>';
+    }
+    el.innerHTML = html + '</tbody></table></div>';
+    renderJmInfo();
+  }
+  function renderJmInfo() {
+    var el = $('jmInfo'); if (!el) return;
+    var semua = Object.keys(cfg.jadwalManual || {}), isiBulan = semua.filter(function (tg) { return tg.slice(0, 7) === jmBulan; }).length;
+    el.innerHTML = isiBulan ? '<b>' + isiBulan + ' hari</b> di bulan ini memakai jadwal manual (seluruhnya ' + semua.length + ' hari).'
+      : 'Bulan ini memakai hitungan otomatis' + (semua.length ? ' (jadwal manual tersimpan untuk ' + semua.length + ' hari di bulan lain).' : '.');
+  }
+  function unduh(nama, isi) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([isi], { type: 'text/csv;charset=utf-8' }));
+    a.download = nama; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function bindJadwal() {
+    var b = $('jmBulan'); if (!b) return;
+    b.onchange = function () { if (b.value) { jmBulan = b.value; renderJadwal(); } };
+    var p = function () { return jmBulan.split('-').map(Number); };
+    var tb = $('jmTplBulan'); if (tb) tb.onclick = function () { var x = p(); unduh('jadwal-sholat-' + jmBulan + '.csv', MasjidJadwal.templateCsv(cfg, x[0], x[1])); };
+    var tt = $('jmTplTahun'); if (tt) tt.onclick = function () { var x = p(); unduh('jadwal-sholat-' + x[0] + '.csv', MasjidJadwal.templateCsv(cfg, x[0], 0)); };
+    var f = $('jmFile'); if (f) f.onchange = function () {
+      var file = f.files && f.files[0]; f.value = ''; if (!file) return;
+      MasjidJadwal.bacaFile(file).then(function (r) {
+        if (!r.jumlah) { toast(r.galat[0] || 'Tidak ada jadwal yang terbaca dari file.', true); return; }
+        cfg.jadwalManual = cfg.jadwalManual || {};
+        var tgs = Object.keys(r.data).sort();
+        tgs.forEach(function (tg) { cfg.jadwalManual[tg] = r.data[tg]; });
+        cfg.sholat.manualAktif = true;
+        jmBulan = tgs[0].slice(0, 7);
+        markDirty(); rerender();
+        toast(r.jumlah + ' hari dimasukkan (' + tgs[0] + ' s.d. ' + tgs[tgs.length - 1] + ')' + (r.galat.length ? ', ' + r.galat.length + ' baris dilewati' : '') + '. Tekan Simpan.', r.galat.length > 0);
+      }, function (e) { toast(e.message, true); });
+    };
+    var h = $('jmHapus'); if (h) h.onclick = function () {
+      if (!armed(h, 'Tekan lagi untuk menghapus')) return;
+      Object.keys(cfg.jadwalManual || {}).forEach(function (tg) { if (tg.slice(0, 7) === jmBulan) delete cfg.jadwalManual[tg]; });
+      markDirty(); renderJadwal(); renderPreview();
+    };
+  }
+  document.addEventListener('change', function (e) {
+    var el = e.target, jm = el.dataset && el.dataset.jm; if (!jm) return;
+    var p = jm.split('|'), day = jmHari(p[0]) || (cfg.jadwalManual[p[0]] = {});
+    var menit = el.value.trim() ? MasjidJadwal.keMenit(el.value) : null;
+    if (el.value.trim() && menit == null) { // salah ketik: kembalikan
+      toast('Jam "' + el.value + '" tidak dikenali. Tulis seperti 04:25.', true);
+      el.value = day[p[1]] || '';
+    }
+    if (menit != null) { day[p[1]] = PrayTime.fmt(menit); el.value = day[p[1]]; el.className = 'jm-c manual'; } else delete day[p[1]];
+    if (!Object.keys(day).length) delete cfg.jadwalManual[p[0]];
+    markDirty(); renderPreview(); renderJmInfo();
+    if (!el.value) { // dikosongkan: tampilkan lagi jam hitungan
+      var d = p[0].split('-');
+      el.value = PrayTime.fmt(MasjidJadwal.hitung(cfg, new Date(+d[0], +d[1] - 1, +d[2]))[p[1]]);
+      el.className = 'jm-c auto';
+    }
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-jmreset]'); if (!b) return;
+    delete cfg.jadwalManual[b.dataset.jmreset]; markDirty(); renderJadwal(); renderPreview();
+  });
 
   function renderIqomah() {
     return '<h2>Adzan, iqomah, dan sholat</h2><p class="section-intro">Urutan di layar: pengingat menjelang adzan, layar adzan, hitung mundur iqomah, lalu layar gelap selama sholat.</p>' +
@@ -273,7 +365,7 @@
     var m = cfg.masjid, s = cfg.sholat, d = new Date(), html = '<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Imsak</th><th>Subuh</th><th>Terbit</th><th>Dzuhur</th><th>Ashar</th><th>Maghrib</th><th>Isya</th></tr></thead><tbody>';
     for (var i = 0; i < 7; i++) {
       var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
-      var t = PrayTime.compute(x, { lat: m.lat, lng: m.lng, tz: m.tz, elev: m.elev, fajr: s.fajr, isha: s.isha, asr: s.asr, ihtiyat: s.ihtiyat, imsak: s.imsak, adjust: s.adjust });
+      var t = MasjidJadwal.jadwalHari(cfg, x); // termasuk jadwal manual bila ada
       html += '<tr' + (i === 0 ? ' class="today"' : '') + '><td>' + HARI[x.getDay()] + ' ' + x.getDate() + ' ' + BULAN3[x.getMonth()] + '</td>' +
         ['imsak', 'subuh', 'terbit', 'dzuhur', 'ashar', 'maghrib', 'isya'].map(function (k) { return '<td>' + PrayTime.fmt(t[k]) + '</td>'; }).join('') + '</tr>';
     }
@@ -368,7 +460,7 @@
     var sec = SECTIONS.filter(function (s) { return s.id === id; })[0] || SECTIONS[0];
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', t.dataset.tab === sec.id ? 'true' : 'false'); });
     $('content').innerHTML = sec.render();
-    renderPreview(); renderNet(); renderClockInfo(); renderPowerInfo(); renderPusatInfo();
+    renderPreview(); renderNet(); renderClockInfo(); renderPowerInfo(); renderPusatInfo(); renderJadwal(); bindJadwal();
     bindSpecial();
   }
 

@@ -20,7 +20,8 @@
       adjust: { subuh: 0, terbit: 0, dzuhur: 1, ashar: 0, maghrib: 0, isya: 0 },
       hijriOffset: 0,
       hijriMaghrib: true,
-      clockOffsetSec: 0
+      clockOffsetSec: 0,
+      manualAktif: true    // pakai jadwal manual (jadwalManual) untuk tanggal yang sudah diisi
     },
     adzan: {
       preMin: 10,
@@ -30,6 +31,8 @@
       jumatMin: 50,
       beep: true
     },
+    // jadwal sholat manual per tanggal dari tabel resmi: { 'YYYY-MM-DD': { subuh: '04:20', ... } }
+    jadwalManual: {},
     pengajian: [
       { hari: '1', tanggal: '', jam: 'Ba\'da Maghrib', judul: 'Kajian Tafsir Al-Qur\'an', pemateri: 'Ustadz Ahmad (contoh)' },
       { hari: '4', tanggal: '', jam: 'Ba\'da Maghrib', judul: 'Yasinan & Tahlil Bersama', pemateri: 'Jamaah Masjid' },
