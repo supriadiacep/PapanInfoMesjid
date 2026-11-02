@@ -168,3 +168,22 @@ input.jm-c { width: 3.9rem; min-height: 32px; padding: 0.1rem 0.2rem; font-size:
 span.jm-c { display: inline-block; padding: 0 0.35rem; border: 1px solid var(--line); border-radius: 6px; }
 span.jm-c.manual { border-color: var(--brass); }
 .jm-ket { color: var(--muted); font-size: 0.88rem; margin-top: 0.6rem; }
+
+/* pilihan tata letak layar */
+.lp-daftar { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.8rem; }
+.lp { position: relative; display: flex; flex-direction: column; gap: 0.35rem; padding: 0.7rem; border: 2px solid var(--line); border-radius: 14px; cursor: pointer; background: var(--bg-2); }
+.lp:hover { border-color: var(--muted); }
+.lp.on { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(217, 164, 65, .25); }
+body.mode-pusat .lp.on { box-shadow: 0 0 0 3px rgba(3, 120, 183, .2); }
+.lp input { position: absolute; opacity: 0; pointer-events: none; }
+.lp b { font-size: 0.98rem; }
+.lp small { color: var(--muted); font-size: 0.8rem; line-height: 1.35; }
+.lp-mini { position: relative; display: block; width: 100%; padding-top: 56.25%; border-radius: 8px; background: #0b2124; overflow: hidden; }
+.lp-mini.tegak { width: 42%; padding-top: 74%; margin: 0 auto; }
+.lp-mini i { position: absolute; border-radius: 3px; }
+.lp-mini .k-h { background: #3f7d77; }
+.lp-mini .k-j { background: #f2eadb; opacity: .85; }
+.lp-mini .k-p { background: #2b5f5a; border-left: 3px solid #d9a441; }
+.lp-mini .k-t { background: #d9a441; opacity: .9; }
+.lp-mini .k-m { background: linear-gradient(135deg, #48627a, #1d3346); border-radius: 0; }
+.lp-mini .k-r { background: #163b3d; border-radius: 0; }

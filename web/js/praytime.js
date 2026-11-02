@@ -92,6 +92,8 @@
       isya: toMin(t.isha, ih + (+adj.isya || 0))
     };
     r.imsak = r.subuh - (o.imsak == null ? 10 : +o.imsak);
+    // Dhuha (kriteria Kemenag): matahari 4,5° di atas ufuk timur, + ihtiyat
+    r.dhuha = toMin(angleTime(-4.5, t.sunrise / 24, true), ih + (+adj.dhuha || 0));
     return r;
   }
 

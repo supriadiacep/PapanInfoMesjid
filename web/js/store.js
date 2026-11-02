@@ -70,6 +70,13 @@
     },
     tampilan: {
       tema: 'zamrud',
+      layout: 'klasik',      // klasik | sinema | kolom | galeri | fokus | minimal | tegak (lihat js/layout.js)
+      analog: false,         // jam analog
+      dhuha: false,          // tampilkan waktu Dhuha
+      pasaran: false,        // pasaran Jawa: Senin Legi, Selasa Pahing, ...
+      acara: true,           // hitung mundur hari besar Islam
+      // siaran langsung YouTube (mis. Makkah / Madinah) di tata letak yang punya layar besar
+      live: { aktif: false, url: '', suara: false },
       slideDetik: 12,
       redup: { aktif: true, mulai: '22:00', selesai: '03:30', persen: 40 },
       foto: { ada: false, versi: 0, latar: true, panel: true },

@@ -113,7 +113,7 @@ yang memegang remote di masjid yang bisa mengatur ulang PIN. Isi papan info tida
 | Petugas Jumat | Khatib, imam, muadzin per tanggal |
 | Pengumuman | Teks berjalan, pengumuman, pesan/hadits |
 | Kas masjid | Saldo, pemasukan, pengeluaran (saldo akhir dihitung otomatis) |
-| Tampilan | Warna tema, kecepatan ganti panel, redup malam |
+| Tampilan | **7 tata letak** (Klasik, Sinema, Kolom, Galeri, Fokus jadwal, Minimal, Tegak), 5 warna tema, jam analog, waktu Dhuha, pasaran Jawa, hitung mundur hari besar Islam, **siaran langsung YouTube Makkah/Madinah**, kecepatan ganti panel, redup malam |
 | Sistem | Alamat untuk HP, samakan jam box, ganti PIN, cadangan & pemulihan data |
 
 ### Foto masjid

@@ -4,8 +4,9 @@
 
   var HARI = ['Ahad', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
   var BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  var NAMA = { imsak: 'Imsak', subuh: 'Subuh', terbit: 'Terbit', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya', jumat: 'Jumat' };
-  var ARAB = { imsak: 'الإمساك', subuh: 'الصبح', terbit: 'الشروق', dzuhur: 'الظهر', ashar: 'العصر', maghrib: 'المغرب', isya: 'العشاء', jumat: 'الجمعة' };
+  var NAMA = { imsak: 'Imsak', subuh: 'Subuh', terbit: 'Terbit', dhuha: 'Dhuha', dzuhur: 'Dzuhur', ashar: 'Ashar', maghrib: 'Maghrib', isya: 'Isya', jumat: 'Jumat' };
+  var ARAB = { imsak: 'الإمساك', subuh: 'الصبح', terbit: 'الشروق', dhuha: 'الضحى', dzuhur: 'الظهر', ashar: 'العصر', maghrib: 'المغرب', isya: 'العشاء', jumat: 'الجمعة' };
+  var PASARAN = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
   var ORDER = ['imsak', 'subuh', 'terbit', 'dzuhur', 'ashar', 'maghrib', 'isya'];
   var WAJIB = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
 
@@ -65,6 +66,11 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function parseDate(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
   function tglPanjang(d) { return HARI[d.getDay()] + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear(); }
+  // pasaran Jawa (Legi, Pahing, Pon, Wage, Kliwon): 22 Oktober 2025 = Rabu Pahing
+  function pasaran(d) {
+    var hari = Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(2025, 9, 22)) / 864e5);
+    return PASARAN[(((1 + hari) % 5) + 5) % 5];
+  }
   function tglPendek(d) { return d.getDate() + ' ' + BULAN[d.getMonth()].slice(0, 3); }
   function rupiah(n) { n = Math.round(+n || 0); return 'Rp ' + (n < 0 ? '-' : '') + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
   function dur(sec) {
@@ -118,7 +124,10 @@
   function renderHeader(d) {
     $('nama').textContent = cfg.masjid.nama;
     $('alamat').textContent = cfg.masjid.alamat;
-    $('masehi').textContent = tglPanjang(d);
+    $('masehi').textContent = cfg.tampilan.pasaran
+      ? HARI[d.getDay()] + ' ' + pasaran(d) + ', ' + d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear()
+      : tglPanjang(d);
+    renderAcara(d);
     var t = times(d), hd = new Date(d);
     var mins = d.getHours() * 60 + d.getMinutes();
     if (cfg.sholat.hijriMaghrib && mins >= t.maghrib) hd.setDate(hd.getDate() + 1);
@@ -128,10 +137,11 @@
   function renderTimes(d) {
     var t = times(d), mins = d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
     var nx = nextPrayer(d), jumat = d.getDay() === 5, html = '';
-    ORDER.forEach(function (p) {
+    var urut = cfg.tampilan.dhuha ? ORDER.slice(0, 3).concat(['dhuha'], ORDER.slice(3)) : ORDER;
+    urut.forEach(function (p) {
       var key = (p === 'dzuhur' && jumat) ? 'jumat' : p;
-      var cls = 'arch';
-      if (p === 'imsak' || p === 'terbit') cls += ' minor';
+      var cls = 'arch w-' + p;
+      if (p === 'imsak' || p === 'terbit' || p === 'dhuha') cls += ' minor';
       if (!nx.tomorrow && nx.p === p) cls += ' next';
       else if (t[p] <= mins) cls += ' past';
       if (nx.tomorrow && p === 'imsak') cls = 'arch minor next';
@@ -407,6 +417,7 @@
       var st = status(d);
       renderCountdown(d, st);
       overlay(st, d);
+      renderAnalog(d);
       if (window.MasjidPusat) MasjidPusat.tick(st.mode);
       modeChanged(st);
       renderDim(d, st);
@@ -422,9 +433,114 @@
     $('stage').style.transform = 'translate(' + x + 'px,' + y + 'px)';
   }
 
+  // ---------- hitung mundur hari besar Islam ("86 hari lagi: Isra' Mi'raj") ----------
+  var ACARA = [
+    [1, 1, 'Tahun Baru Hijriah'], [1, 10, "Hari 'Asyura"], [3, 12, 'Maulid Nabi ﷺ'],
+    [7, 27, "Isra' Mi'raj"], [9, 1, 'Awal Ramadhan'], [9, 17, "Nuzulul Qur'an"],
+    [10, 1, 'Idul Fitri'], [12, 9, 'Hari Arafah'], [12, 10, 'Idul Adha']
+  ];
+  var acaraKey = '';
+  function renderAcara(d) {
+    var el = $('acara'); if (!el) return;
+    if (!cfg.tampilan.acara) { el.hidden = true; return; }
+    var k = dayKey(d) + (cfg.sholat.hijriOffset || 0);
+    if (k === acaraKey) return;
+    acaraKey = k;
+    var x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    for (var i = 0; i < 400; i++) {
+      var h = Hijri.toHijri(x, cfg.sholat.hijriOffset);
+      for (var j = 0; j < ACARA.length; j++) {
+        if (ACARA[j][0] === h.month && ACARA[j][1] === h.day) {
+          el.innerHTML = i === 0 ? '<b>Hari ini</b> ' + esc(ACARA[j][2]) : '<b>' + i + ' hari lagi</b> ' + esc(ACARA[j][2]);
+          el.hidden = false;
+          return;
+        }
+      }
+      x.setDate(x.getDate() + 1);
+    }
+    el.hidden = true;
+  }
+
+  // ---------- jam analog ----------
+  function siapkanAnalog() {
+    var g = $('aTanda'); if (!g || g.childNodes.length) return;
+    var ns = 'http://www.w3.org/2000/svg';
+    for (var i = 0; i < 60; i++) {
+      var l = document.createElementNS(ns, 'line'), besar = i % 5 === 0;
+      l.setAttribute('x1', 100); l.setAttribute('x2', 100);
+      l.setAttribute('y1', besar ? 10 : 12); l.setAttribute('y2', besar ? 24 : 17);
+      l.setAttribute('class', besar ? 'a-besar' : 'a-kecil');
+      l.setAttribute('transform', 'rotate(' + i * 6 + ' 100 100)');
+      g.appendChild(l);
+    }
+  }
+  function putar(id, deg) { var e = $(id); if (e) e.setAttribute('transform', 'rotate(' + deg + ' 100 100)'); }
+  function renderAnalog(d) {
+    if ($('analog').hidden) return;
+    var s = d.getSeconds(), m = d.getMinutes() + s / 60, h = (d.getHours() % 12) + m / 60;
+    putar('aJam', h * 30); putar('aMenit', m * 6); putar('aDetik', s * 6);
+  }
+
+  // ---------- media: siaran langsung YouTube (Makkah/Madinah) / foto masjid ----------
+  function ytEmbed(u, suara) {
+    u = String(u || '').trim();
+    var ch = /(?:channel\/|^)(UC[\w-]{22})/.exec(u), id = null, m;
+    if (!ch) {
+      if (/^[\w-]{11}$/.test(u)) id = u;
+      else if ((m = /(?:v=|youtu\.be\/|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/.exec(u))) id = m[1];
+    }
+    var q = 'autoplay=1&mute=' + (suara ? 0 : 1) + '&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
+    if (ch) {
+      var r = siaran[ch[1]];
+      if (r && r.id) return 'https://www.youtube-nocookie.com/embed/' + r.id + '?' + q; // siaran yang sedang tayang (dicari server pusat)
+      cariSiaran(ch[1]);
+      return 'https://www.youtube-nocookie.com/embed/live_stream?channel=' + ch[1] + '&' + q;
+    }
+    if (id) return 'https://www.youtube-nocookie.com/embed/' + id + '?' + q + '&loop=1&playlist=' + id;
+    return null;
+  }
+  // kanal bisa punya beberapa siaran: server pusat mencarikan video yang sedang tayang (diperbarui tiap 30 menit)
+  var siaran = {};
+  function cariSiaran(ch) {
+    var r = siaran[ch];
+    if (r && (r.sedang || Date.now() - r.t < 30 * 60000)) return;
+    siaran[ch] = { t: Date.now(), id: r && r.id, sedang: true };
+    var pusat = (cfg.pusat && cfg.pusat.server) || 'https://tv.pintarinovasi.co.id';
+    fetch(pusat.replace(/[/]+$/, '') + '/api/player/youtube-live?channel=' + ch, { cache: 'no-store' })
+      .then(function (x) { return x.json(); })
+      .then(function (j) { var lama = siaran[ch].id; siaran[ch] = { t: Date.now(), id: j.video || lama }; if (siaran[ch].id !== lama) renderMedia(); },
+        function () { siaran[ch].sedang = false; });
+  }
+  setInterval(function () { if (cfg) renderMedia(); }, 30 * 60000);
+  var mediaKini = '';
+  function renderMedia() {
+    var el = $('media'), stage = $('stage'), L = MasjidLayout.cari(cfg.tampilan.layout);
+    var lv = cfg.tampilan.live || {}, foto = MasjidStore.photoUrl(cfg);
+    var online = navigator.onLine !== false;
+    var src = L.media && lv.aktif && online ? ytEmbed(lv.url, lv.suara) : null;
+    var isi, jenis;
+    if (src) { jenis = 'live:' + src; isi = '<iframe src="' + esc(src) + '" allow="autoplay; encrypted-media" frameborder="0" referrerpolicy="strict-origin-when-cross-origin"></iframe>'; }
+    else if (L.media && foto) { jenis = 'foto:' + foto; isi = '<img src="' + esc(foto) + '" alt="">'; }
+    else {
+      jenis = 'hias:' + cfg.masjid.nama;
+      isi = '<div class="media-hias"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 6c3 5 9 8 9 15 0 3-1 5-2 6h9v31H16V27h9c-1-1-2-3-2-6 0-7 6-10 9-15z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M26 58V44a6 6 0 0 1 12 0v14" fill="none" stroke="currentColor" stroke-width="2.4"/></svg>' +
+        '<p>' + esc(cfg.masjid.nama) + '</p></div>';
+    }
+    el.hidden = !L.media;
+    stage.className = (src || foto) && L.media ? 'ada-media' : 'tanpa-media';
+    if (jenis !== mediaKini) { el.innerHTML = isi; mediaKini = jenis; } // siaran tidak dimuat ulang bila tidak berubah
+  }
+  window.addEventListener('online', function () { if (cfg) renderMedia(); });
+  window.addEventListener('offline', function () { if (cfg) renderMedia(); });
+
   function applyConfig(conf, raw) {
     cfg = conf; rawCfg = raw; cache = {};
     document.body.setAttribute('data-tema', cfg.tampilan.tema || 'zamrud');
+    MasjidLayout.terapkan(cfg.tampilan.layout || 'klasik');
+    $('analog').hidden = !cfg.tampilan.analog;
+    siapkanAnalog();
+    acaraKey = '';
+    renderMedia();
     lastDayKey = ''; lastTickerText = null;
     renderTicker();
     renderBackground();
@@ -435,7 +551,7 @@
 
   function renderBackground() {
     var bg = $('bg'), foto = MasjidStore.photoUrl(cfg);
-    var on = !!(foto && cfg.tampilan.foto.latar);
+    var on = !!(foto && cfg.tampilan.foto.latar) && cfg.tampilan.layout !== 'sinema'; // sinema: foto sudah jadi media penuh
     bg.hidden = !on;
     bg.style.backgroundImage = on ? 'url("' + foto.replace(/"/g, '%22') + '")' : 'none';
   }

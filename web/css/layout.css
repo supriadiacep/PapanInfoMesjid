@@ -1,0 +1,268 @@
+/* Tata letak layar (html[data-layout=...]) + tema tambahan + jam analog + media.
+   Hanya flexbox & margin (tanpa CSS grid / gap): tetap jalan di WebView Android 5–7. */
+
+/* ---------- tema tambahan ---------- */
+body[data-tema="samudra"] { --ink: #071A33; --ink-2: #0C2747; --glaze: #1D4F86; --plaster: #EEF5FF; --celadon: #9EC3EA; --brass: #F7CF3C; --brass-ink: #1F1800; --night: #030B16; }
+body[data-tema="terang"] { --ink: #F4EFE4; --ink-2: #FFFFFF; --glaze: #D9CDB6; --plaster: #1D2A2A; --celadon: #5D6B66; --brass: #0B7A5C; --brass-ink: #FFFFFF; --night: #E8E1D3; color-scheme: light; }
+body[data-tema="terang"] .bg::after { opacity: .9; }
+
+/* ---------- bagian umum ---------- */
+.clockwrap { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+.clock-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; }
+.acara { font-size: 1.7rem; color: var(--celadon); margin-top: 1rem; line-height: 1.3; }
+.acara b { color: var(--brass); font-weight: 800; margin-right: 0.5rem; }
+.acara[hidden] { display: none; }
+
+.analog { -webkit-flex: none; flex: none; width: 19rem; height: 19rem; margin-right: 2.6rem; }
+.analog[hidden] { display: none; }
+.analog svg { width: 100%; height: 100%; display: block; }
+.a-muka { fill: var(--ink-2); stroke: var(--glaze); stroke-width: 3; }
+.a-besar { stroke: var(--plaster); stroke-width: 3.5; stroke-linecap: round; }
+.a-kecil { stroke: var(--celadon); stroke-width: 1.2; opacity: .6; }
+.a-jam { stroke: var(--plaster); stroke-width: 7; stroke-linecap: round; }
+.a-menit { stroke: var(--plaster); stroke-width: 4.5; stroke-linecap: round; }
+.a-detik { stroke: var(--brass); stroke-width: 2; stroke-linecap: round; }
+.a-pusat { fill: var(--brass); }
+/* jam digital mengecil bila ada jam analog */
+.analog:not([hidden]) + .clock-isi #hm { font-size: 10rem; }
+.analog:not([hidden]) + .clock-isi #ss { font-size: 3.4rem; margin-left: 1rem; width: 4.6rem; }
+
+.media { position: relative; overflow: hidden; background: #000; }
+.media[hidden] { display: none; }
+.media iframe, .media img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; display: block; }
+.media img { object-fit: cover; }
+.media-hias {
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
+  background: var(--ink-2); background: radial-gradient(ellipse at 50% 35%, var(--ink-2), var(--night));
+  color: var(--brass); text-align: center;
+}
+.media-hias::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23F2EADB' stroke-width='1.5'%3E%3Cpath d='M60 18l12 30 30 12-30 12-12 30-12-30-30-12 30-12z'/%3E%3Cpath d='M30 30h60v60H30z' transform='rotate(45 60 60)'/%3E%3Cpath d='M30 30h60v60H30z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 10rem 10rem;
+}
+.media-hias svg { position: relative; width: 8rem; height: 8rem; }
+.media-hias p { position: relative; color: var(--plaster); font-size: 2.8rem; font-weight: 800; margin-top: 1.4rem; padding: 0 2rem; letter-spacing: -0.01em; }
+
+/* kartu kaca (dipakai beberapa tata letak) */
+.kaca { background: rgba(4, 12, 20, 0.55); border: 0.1rem solid rgba(255, 255, 255, 0.12); border-radius: 1.6rem; }
+
+/* =====================================================================
+   SINEMA — media penuh layar, informasi di atas kartu kaca
+   ===================================================================== */
+html[data-layout="sinema"] body { --plaster: #FFFFFF; --celadon: #D5E2EC; }
+html[data-layout="sinema"] #stage { padding: 0; }
+html[data-layout="sinema"] .media { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; }
+html[data-layout="sinema"] .L-lapis {
+  position: relative; z-index: 1; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  padding: 1.8rem 2.2rem 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%);
+}
+html[data-layout="sinema"] .top { height: auto; border: 0; padding: 1.2rem 1.8rem; background: rgba(4, 12, 20, 0.5); border-radius: 1.6rem; }
+html[data-layout="sinema"] #nama { font-size: 2.4rem; }
+html[data-layout="sinema"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; padding: 1.4rem 0; }
+html[data-layout="sinema"] .L-ruang { -webkit-flex: 1 1 0%; flex: 1 1 0%; }
+html[data-layout="sinema"] .clockwrap { -webkit-flex: none; flex: none; background: rgba(4, 12, 20, 0.55); border-radius: 1.6rem; padding: 1.4rem 2.2rem; border: 0.1rem solid rgba(255,255,255,.12); }
+html[data-layout="sinema"] .clock-isi { -webkit-flex: none; flex: none; }
+html[data-layout="sinema"] #hm { font-size: 8.4rem; }
+html[data-layout="sinema"] #ss { font-size: 3rem; width: 4.4rem; margin-left: 0.8rem; }
+html[data-layout="sinema"] .countdown { font-size: 1.8rem; margin-top: 0.8rem; }
+html[data-layout="sinema"] .acara { font-size: 1.4rem; margin-top: 0.6rem; }
+html[data-layout="sinema"] .analog { width: 11rem; height: 11rem; margin-right: 1.6rem; }
+html[data-layout="sinema"] .analog:not([hidden]) + .clock-isi #hm { font-size: 6.4rem; }
+html[data-layout="sinema"] .panel { width: 31rem; height: 27rem; -webkit-align-self: flex-end; align-self: flex-end; margin: 0; border-left: 0; border-radius: 1.6rem; background: rgba(4, 12, 20, 0.6); border: 0.1rem solid rgba(255,255,255,.12); padding: 1.6rem 2rem 1.2rem; }
+html[data-layout="sinema"] .times { height: auto; padding-bottom: 1.4rem; -webkit-align-items: stretch; align-items: stretch; }
+html[data-layout="sinema"] .arch, html[data-layout="sinema"] .arch.minor, html[data-layout="sinema"] .arch.next {
+  height: 9rem; border-radius: 1.3rem; border: 0.1rem solid rgba(255,255,255,.14); background: rgba(4, 12, 20, 0.55);
+  -webkit-justify-content: center; justify-content: center; padding: 0; box-shadow: none;
+}
+html[data-layout="sinema"] .arch + .arch { margin-left: 0.9rem; }
+html[data-layout="sinema"] .arch .ar { display: none; }
+html[data-layout="sinema"] .arch .nm { font-size: 1.4rem; }
+html[data-layout="sinema"] .arch .tm, html[data-layout="sinema"] .arch.next .tm { font-size: 3.3rem; margin-top: 0.1rem; }
+html[data-layout="sinema"] .arch.minor .tm { font-size: 2.6rem; }
+html[data-layout="sinema"] .arch.next { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
+html[data-layout="sinema"] .arch.next .nm { color: var(--brass-ink); }
+html[data-layout="sinema"] .arch.next::before { display: none; }
+html[data-layout="sinema"] .ticker { position: relative; z-index: 1; margin: 0; background: rgba(0, 0, 0, 0.72); border-top: 0.1rem solid rgba(255,255,255,.12); }
+
+/* =====================================================================
+   KOLOM — jam & jadwal tegak di kiri, layar besar di kanan
+   ===================================================================== */
+html[data-layout="kolom"] #stage { padding: 1.8rem 2.2rem 0; }
+html[data-layout="kolom"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; padding-bottom: 1.4rem; }
+html[data-layout="kolom"] .L-kiri { -webkit-flex: none; flex: none; width: 29rem; margin-right: 1.8rem; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="kolom"] .L-kanan { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="kolom"] .clockwrap { -webkit-flex: none; flex: none; background: var(--ink-2); border-radius: 1.6rem; padding: 1.4rem 1.8rem; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: stretch; align-items: stretch; }
+html[data-layout="kolom"] #hm { font-size: 8.8rem; }
+html[data-layout="kolom"] #ss { font-size: 3rem; width: 4.2rem; margin-left: 0.8rem; }
+html[data-layout="kolom"] .countdown { font-size: 1.7rem; margin-top: 0.6rem; }
+html[data-layout="kolom"] .acara { font-size: 1.35rem; margin-top: 0.5rem; }
+html[data-layout="kolom"] .analog { width: 13rem; height: 13rem; margin: 0 auto 1rem; }
+html[data-layout="kolom"] .analog:not([hidden]) + .clock-isi #hm { font-size: 6.6rem; }
+html[data-layout="kolom"] .top { height: auto; padding-bottom: 1rem; margin-bottom: 1.2rem; }
+html[data-layout="kolom"] .L-layar, html[data-layout="galeri"] .L-layar, html[data-layout="tegak"] .L-layar { position: relative; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; border-radius: 1.6rem; overflow: hidden; }
+html[data-layout="kolom"] .L-layar .media { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+html[data-layout="kolom"] .L-layar .panel { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: auto; margin: 0; border-radius: 1.6rem; }
+html[data-layout="kolom"] .ada-media .L-layar .panel { top: auto; left: auto; right: 1.2rem; bottom: 1.2rem; width: 24rem; height: 16rem; padding: 1.1rem 1.4rem 0.9rem; background: rgba(4, 12, 20, 0.7); border: 0.1rem solid rgba(255,255,255,.14); border-left: 0; }
+html[data-layout="kolom"] .tanpa-media .media { display: none; }
+
+/* jadwal tegak (kolom & galeri): baris-baris */
+html[data-layout="kolom"] .times, html[data-layout="galeri"] .times {
+  -webkit-flex: 1 1 0%; flex: 1 1 0%; height: auto; min-height: 0; padding: 0; margin-top: 1.2rem;
+  -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: stretch; align-items: stretch;
+}
+html[data-layout="galeri"] .times { margin-top: 0; }
+html[data-layout="kolom"] .arch, html[data-layout="galeri"] .arch,
+html[data-layout="kolom"] .arch.minor, html[data-layout="galeri"] .arch.minor,
+html[data-layout="kolom"] .arch.next, html[data-layout="galeri"] .arch.next {
+  -webkit-flex: 1 1 0%; flex: 1 1 0%; height: auto; min-height: 0; margin-left: 0;
+  border-radius: 1.1rem; -webkit-flex-direction: row; flex-direction: row;
+  -webkit-align-items: center; align-items: center; -webkit-justify-content: flex-start; justify-content: flex-start;
+  padding: 0 1.4rem; text-align: left; box-shadow: none;
+}
+html[data-layout="kolom"] .arch + .arch, html[data-layout="galeri"] .arch + .arch { margin-left: 0; margin-top: 0.7rem; }
+html[data-layout="kolom"] .arch .ar, html[data-layout="galeri"] .arch .ar { -webkit-order: 3; order: 3; margin: 0 0 0 1rem; font-size: 1.5rem; width: 6rem; text-align: right; }
+html[data-layout="kolom"] .arch .nm, html[data-layout="galeri"] .arch .nm { -webkit-flex: 1 1 0%; flex: 1 1 0%; font-size: 1.75rem; }
+html[data-layout="kolom"] .arch .tm, html[data-layout="galeri"] .arch .tm,
+html[data-layout="kolom"] .arch.next .tm, html[data-layout="galeri"] .arch.next .tm { font-size: 3rem; margin: 0; }
+html[data-layout="kolom"] .arch.minor .tm, html[data-layout="galeri"] .arch.minor .tm { font-size: 2.3rem; }
+html[data-layout="kolom"] .arch.next::before, html[data-layout="galeri"] .arch.next::before { display: none; }
+html[data-layout="kolom"] .arch.next, html[data-layout="galeri"] .arch.next { -webkit-transform: scale(1.03); transform: scale(1.03); }
+
+/* =====================================================================
+   GALERI — jadwal kiri · layar tengah · jam & info kanan
+   ===================================================================== */
+html[data-layout="galeri"] #stage { padding: 1.8rem 2.2rem 0; }
+html[data-layout="galeri"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; padding-bottom: 1.4rem; }
+html[data-layout="galeri"] .L-kiri { -webkit-flex: none; flex: none; width: 22rem; margin-right: 1.6rem; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="galeri"] .L-tengah { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-width: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="galeri"] .L-kanan { -webkit-flex: none; flex: none; width: 27rem; margin-left: 1.6rem; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="galeri"] .top { height: auto; padding-bottom: 1rem; margin-bottom: 1.2rem; }
+html[data-layout="galeri"] #nama { font-size: 2.3rem; }
+html[data-layout="galeri"] .dates { display: none; }
+html[data-layout="galeri"] .L-layar .media { position: absolute; top: 0; right: 0; bottom: 0; left: 0; }
+html[data-layout="galeri"] .clockwrap { -webkit-flex: none; flex: none; background: var(--ink-2); border-radius: 1.6rem; padding: 1.3rem 1.6rem; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: stretch; align-items: stretch; }
+html[data-layout="galeri"] #hm { font-size: 7.4rem; }
+html[data-layout="galeri"] #ss { font-size: 2.6rem; width: 3.8rem; margin-left: 0.6rem; }
+html[data-layout="galeri"] .countdown { font-size: 1.5rem; margin-top: 0.5rem; }
+html[data-layout="galeri"] .acara { font-size: 1.25rem; margin-top: 0.5rem; }
+html[data-layout="galeri"] .analog { width: 12rem; height: 12rem; margin: 0 auto 0.8rem; }
+html[data-layout="galeri"] .analog:not([hidden]) + .clock-isi #hm { font-size: 6rem; }
+/* tanggal pindah ke kartu jam (galeri): tampilkan lewat ::before tidak bisa, jadi kartu jam cukup jam & hitung mundur */
+html[data-layout="galeri"] .panel { -webkit-flex: 1 1 0%; flex: 1 1 0%; width: auto; margin: 1.2rem 0 0; border-radius: 1.6rem; border-left: 0; border-top: 0.35rem solid var(--brass); padding: 1.5rem 1.7rem 1.1rem; }
+html[data-layout="galeri"] .arch .ar { display: none; }
+html[data-layout="galeri"] .arch .nm { font-size: 1.6rem; }
+html[data-layout="galeri"] .arch .tm, html[data-layout="galeri"] .arch.next .tm { font-size: 2.7rem; }
+
+/* =====================================================================
+   FOKUS JADWAL — kotak besar 4 per baris
+   ===================================================================== */
+html[data-layout="fokus"] #stage { padding: 1.8rem 2.4rem 0; }
+html[data-layout="fokus"] .top { height: 5.6rem; }
+html[data-layout="fokus"] .L-fokus { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; padding: 1.4rem 0 0.6rem; }
+html[data-layout="fokus"] .clockwrap { -webkit-flex: none; flex: none; }
+html[data-layout="fokus"] .clock-isi { -webkit-flex: none; flex: none; display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center; }
+html[data-layout="fokus"] #hm { font-size: 7.6rem; }
+html[data-layout="fokus"] #ss { font-size: 2.8rem; width: 4rem; margin-left: 0.6rem; }
+html[data-layout="fokus"] .countdown { margin: 0 0 0 2.6rem; font-size: 2.1rem; }
+html[data-layout="fokus"] .acara { width: 100%; text-align: center; margin-top: 0.4rem; font-size: 1.5rem; }
+html[data-layout="fokus"] .analog { width: 9rem; height: 9rem; margin-right: 2rem; }
+html[data-layout="fokus"] .analog:not([hidden]) + .clock-isi #hm { font-size: 7.6rem; }
+html[data-layout="fokus"] .times {
+  -webkit-flex: 1 1 0%; flex: 1 1 0%; height: auto; min-height: 0; padding: 0.4rem 0 1.2rem;
+  -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-justify-content: center; justify-content: center;
+  -webkit-align-content: stretch; align-content: stretch; -webkit-align-items: stretch; align-items: stretch;
+  margin: 0 -0.6rem;
+}
+html[data-layout="fokus"] .arch, html[data-layout="fokus"] .arch.minor, html[data-layout="fokus"] .arch.next {
+  -webkit-flex: none; flex: none; width: 21.6rem; width: calc(25% - 1.2rem); height: auto; margin: 0.6rem;
+  border-radius: 1.8rem; -webkit-justify-content: center; justify-content: center; padding: 0; box-shadow: none;
+  background: var(--ink-2); border: 0.12rem solid var(--glaze);
+}
+html[data-layout="fokus"] .arch + .arch { margin-left: 0.6rem; }
+html[data-layout="fokus"] .arch .ar { font-size: 2.2rem; margin-bottom: 0.3rem; }
+html[data-layout="fokus"] .arch .nm { font-size: 2.3rem; }
+html[data-layout="fokus"] .arch .tm, html[data-layout="fokus"] .arch.next .tm { font-size: 5.8rem; margin-top: 0.2rem; letter-spacing: -0.04em; }
+html[data-layout="fokus"] .arch.minor .tm { font-size: 4.4rem; }
+html[data-layout="fokus"] .arch.next { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); box-shadow: 0 0 3rem -0.6rem rgba(217, 164, 65, 0.6); }
+html[data-layout="fokus"] .arch.next::before { top: 1.2rem; }
+
+/* =====================================================================
+   MINIMAL — jam raksasa, jadwal satu garis tipis
+   ===================================================================== */
+html[data-layout="minimal"] #stage { padding: 2rem 3.4rem 0; }
+html[data-layout="minimal"] .top { height: 5rem; border-bottom-color: transparent; }
+html[data-layout="minimal"] #nama { font-size: 2.2rem; font-weight: 700; }
+html[data-layout="minimal"] .mark { width: 3.2rem; height: 3.2rem; }
+html[data-layout="minimal"] #masehi { font-size: 1.6rem; }
+html[data-layout="minimal"] #hijriah { font-size: 1.3rem; }
+html[data-layout="minimal"] .L-pusat { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
+html[data-layout="minimal"] .clockwrap { -webkit-flex: none; flex: none; }
+html[data-layout="minimal"] .clock-isi { -webkit-flex: none; flex: none; text-align: center; }
+html[data-layout="minimal"] .clock { -webkit-justify-content: center; justify-content: center; }
+html[data-layout="minimal"] #hm { font-size: 21rem; letter-spacing: -0.055em; }
+html[data-layout="minimal"] #ss { font-size: 5rem; width: 7rem; }
+html[data-layout="minimal"] .countdown { font-size: 2.6rem; margin-top: 1.4rem; }
+html[data-layout="minimal"] .acara { font-size: 1.8rem; }
+html[data-layout="minimal"] .analog { width: 26rem; height: 26rem; margin-right: 4rem; }
+html[data-layout="minimal"] .analog:not([hidden]) + .clock-isi #hm { font-size: 14rem; }
+html[data-layout="minimal"] .analog:not([hidden]) + .clock-isi { text-align: left; }
+html[data-layout="minimal"] .analog:not([hidden]) + .clock-isi .clock { -webkit-justify-content: flex-start; justify-content: flex-start; }
+html[data-layout="minimal"] .times { height: 9rem; padding-bottom: 1.6rem; -webkit-align-items: stretch; align-items: stretch; border-top: 0.1rem solid var(--glaze); padding-top: 1.2rem; }
+html[data-layout="minimal"] .arch, html[data-layout="minimal"] .arch.minor, html[data-layout="minimal"] .arch.next {
+  height: auto; border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 0;
+  -webkit-justify-content: center; justify-content: center;
+}
+html[data-layout="minimal"] .arch + .arch { margin-left: 0; border-left: 0.1rem solid var(--glaze); }
+html[data-layout="minimal"] .arch .ar { display: none; }
+html[data-layout="minimal"] .arch .nm { font-size: 1.3rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--celadon); }
+html[data-layout="minimal"] .arch .tm, html[data-layout="minimal"] .arch.next .tm, html[data-layout="minimal"] .arch.minor .tm { font-size: 3.2rem; font-weight: 700; margin-top: 0.2rem; }
+html[data-layout="minimal"] .arch.next .nm, html[data-layout="minimal"] .arch.next .tm { color: var(--brass); }
+html[data-layout="minimal"] .arch.next::before { display: none; }
+html[data-layout="minimal"] .ticker { background: transparent; }
+
+/* =====================================================================
+   TEGAK — TV dipasang berdiri (9:16)
+   ===================================================================== */
+html[data-layout="tegak"] { font-size: calc(100vh / 96); }
+@media (max-aspect-ratio: 9/16) { html[data-layout="tegak"] { font-size: calc(100vw / 54); } }
+html[data-layout="tegak"] #stage { width: 54rem; height: 96rem; padding: 2rem 2.2rem 0; }
+html[data-layout="tegak"] .mark { display: none; }
+html[data-layout="tegak"] #nama { font-size: 2.6rem; }
+html[data-layout="tegak"] .top { -webkit-flex: none; flex: none; height: auto; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; text-align: center; padding-bottom: 1.1rem; }
+html[data-layout="tegak"] .identity { -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="tegak"] .identity > * + * { margin-left: 0; margin-top: 0.8rem; }
+html[data-layout="tegak"] .dates { text-align: center; margin-top: 0.5rem; }
+html[data-layout="tegak"] #masehi { font-size: 1.7rem; }
+html[data-layout="tegak"] #hijriah { font-size: 1.4rem; }
+html[data-layout="tegak"] .clockwrap { -webkit-flex: none; flex: none; -webkit-justify-content: center; justify-content: center; padding: 1.2rem 0 1rem; }
+html[data-layout="tegak"] .clock-isi { -webkit-flex: none; flex: none; text-align: center; }
+html[data-layout="tegak"] .clock { -webkit-justify-content: center; justify-content: center; }
+html[data-layout="tegak"] #hm { font-size: 10rem; }
+html[data-layout="tegak"] #ss { font-size: 3.6rem; width: 5rem; }
+html[data-layout="tegak"] .countdown { font-size: 1.9rem; margin-top: 0.6rem; }
+html[data-layout="tegak"] .acara { font-size: 1.45rem; margin-top: 0.5rem; }
+html[data-layout="tegak"] .analog { width: 13rem; height: 13rem; margin-right: 2rem; }
+html[data-layout="tegak"] .analog:not([hidden]) + .clock-isi #hm { font-size: 8.4rem; }
+html[data-layout="tegak"] .L-layar { -webkit-flex: none; flex: none; height: 38rem; overflow: visible; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html[data-layout="tegak"] .L-layar .media { -webkit-flex: none; flex: none; height: 24rem; border-radius: 1.6rem; }
+html[data-layout="tegak"] .L-layar .panel { -webkit-flex: 1 1 0%; flex: 1 1 0%; width: auto; margin: 1.2rem 0 0; border-radius: 1.6rem; border-left: 0; border-top: 0.35rem solid var(--brass); }
+html[data-layout="tegak"] .tanpa-media .L-layar .media { display: none; }
+html[data-layout="tegak"] .tanpa-media .L-layar .panel { margin-top: 0; }
+html[data-layout="tegak"] .times { -webkit-flex: 1 1 0%; flex: 1 1 0%; height: auto; min-height: 0; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: stretch; align-content: stretch; -webkit-align-items: stretch; align-items: stretch; padding: 1rem 0 1.2rem; margin: 0 -0.5rem; }
+html[data-layout="tegak"] .arch, html[data-layout="tegak"] .arch.minor, html[data-layout="tegak"] .arch.next {
+  -webkit-flex: none; flex: none; width: 25.5rem; width: calc(50% - 1rem); height: auto; margin: 0.5rem;
+  border-radius: 1.2rem; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: space-between; justify-content: space-between; padding: 0 1.4rem; box-shadow: none;
+}
+html[data-layout="tegak"] .arch + .arch { margin-left: 0.5rem; }
+html[data-layout="tegak"] .arch .ar { display: none; }
+html[data-layout="tegak"] .arch .nm { font-size: 1.7rem; }
+html[data-layout="tegak"] .arch .tm, html[data-layout="tegak"] .arch.next .tm, html[data-layout="tegak"] .arch.minor .tm { font-size: 2.7rem; margin: 0; }
+html[data-layout="tegak"] .arch.next::before { display: none; }
+html[data-layout="tegak"] .ov-inner { width: 50rem; }
+html[data-layout="tegak"] .ov-big { font-size: 12rem; }

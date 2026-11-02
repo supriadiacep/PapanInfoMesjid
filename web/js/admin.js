@@ -299,9 +299,30 @@
   }
 
   function renderTampilan() {
-    return '<h2>Tampilan layar</h2><p class="section-intro">Atur warna, kecepatan pergantian panel, dan peredupan layar di malam hari.</p>' +
+    var pilih = cfg.tampilan.layout || 'klasik';
+    var kartu = MasjidLayout.LAYOUTS.map(function (L) {
+      return '<label class="lp' + (L.id === pilih ? ' on' : '') + '"><input type="radio" name="layout" value="' + L.id + '" data-path="tampilan.layout" data-type="text"' + (L.id === pilih ? ' checked' : '') + '>' +
+        '<span class="lp-mini' + (L.id === 'tegak' ? ' tegak' : '') + '">' + L.kotak.map(function (k) {
+          return '<i class="k-' + k[0] + '" style="left:' + k[1] + '%;top:' + k[2] + '%;width:' + k[3] + '%;height:' + k[4] + '%"></i>';
+        }).join('') + '</span><b>' + esc(L.nama) + '</b><small>' + esc(L.ket) + '</small></label>';
+    }).join('');
+    return '<h2>Tampilan layar</h2><p class="section-intro">Pilih tata letak dan warna, tambahan seperti jam analog, Dhuha, pasaran, hitung mundur hari besar, serta siaran langsung Makkah/Madinah.</p>' +
+      '<div class="group"><h3>Tata letak</h3><p>Ketuk salah satu, lalu tekan Simpan. Hasilnya bisa dilihat lewat tombol Lihat layar' + (PUSAT ? ' atau pratinjau di sebelah' : '') + '.</p><div class="lp-daftar">' + kartu + '</div></div>' +
+      group('Tambahan di layar', '',
+        field({ path: 'tampilan.analog', label: 'Jam analog', type: 'check' }) +
+        field({ path: 'tampilan.dhuha', label: 'Waktu Dhuha', type: 'check' }) +
+        field({ path: 'tampilan.pasaran', label: 'Pasaran Jawa (Legi, Pahing, …)', type: 'check' }) +
+        field({ path: 'tampilan.acara', label: 'Hitung mundur hari besar Islam', type: 'check' })) +
+      '<div class="group"><h3>Siaran langsung (YouTube)</h3><p>Tampil di tata letak Sinema, Kolom, Galeri, dan Tegak. Butuh internet; bila internet putus, layar memakai foto masjid. Suara mati kecuali dinyalakan.</p>' +
+      '<div class="grid wide">' +
+      field({ path: 'tampilan.live.aktif', label: 'Tampilkan siaran langsung', type: 'check' }) +
+      field({ path: 'tampilan.live.url', label: 'Tautan YouTube (kanal atau video siaran)', help: 'Contoh kanal: https://www.youtube.com/channel/UC… — tautan kanal lebih awet karena siaran yang berganti tetap ikut.', wide: true }) +
+      '</div><div class="btn-row" style="margin-top:0.8rem">' +
+      '<button type="button" class="btn" data-live="UCos52azQNBgW63_9uDJoPDA">🕋 Makkah (KSA Qur\'an TV)</button>' +
+      '<button type="button" class="btn" data-live="UCROKYPep-UuODNwyipe6JMw">🕌 Madinah (Saudi Sunnah TV)</button></div>' +
+      '<div class="grid" style="margin-top:0.8rem">' + field({ path: 'tampilan.live.suara', label: 'Bunyikan suara siaran', type: 'check' }) + '</div></div>' +
       group('Umum', '',
-        field({ path: 'tampilan.tema', label: 'Warna tema', type: 'select', options: [['zamrud', 'Hijau toska'], ['malam', 'Biru malam'], ['kayu', 'Coklat kayu']] }) +
+        field({ path: 'tampilan.tema', label: 'Warna tema', type: 'select', options: [['zamrud', 'Hijau toska'], ['malam', 'Biru malam'], ['kayu', 'Coklat kayu'], ['samudra', 'Biru samudra & emas'], ['terang', 'Terang (ruangan cerah)']] }) +
         field({ path: 'tampilan.slideDetik', label: 'Ganti panel tiap (detik)', type: 'number', min: 5, max: 120, step: 1 }) +
         field({ path: 'tampilan.tampilkanAlamatAdmin', label: 'Tampilkan alamat pengaturan HP di layar', type: 'check' })) +
       group('Redup malam', 'Mengurangi silau dan menjaga umur TV saat masjid sepi.',
@@ -536,6 +557,24 @@
   }
 
   function bindSpecial() {
+    // tombol pintas siaran Makkah / Madinah
+    var lv = document.querySelectorAll('[data-live]');
+    for (var li = 0; li < lv.length; li++) lv[li].onclick = function () {
+      cfg.tampilan.live = cfg.tampilan.live || {};
+      cfg.tampilan.live.url = 'https://www.youtube.com/channel/' + this.getAttribute('data-live');
+      cfg.tampilan.live.aktif = true;
+      var L = MasjidLayout.cari(cfg.tampilan.layout);
+      if (!L.media) cfg.tampilan.layout = 'kolom'; // siaran butuh tata letak berlayar besar
+      markDirty(); rerender();
+      toast(L.media ? 'Siaran diatur. Tekan Simpan.' : 'Siaran diatur; tata letak diganti ke Kolom agar siaran tampil. Tekan Simpan.');
+    };
+    // pilihan tata letak: tandai kartu yang dipilih
+    var lp = document.querySelectorAll('input[name=layout]');
+    for (var lj = 0; lj < lp.length; lj++) lp[lj].onchange = function () {
+      cfg.tampilan.layout = this.value; markDirty();
+      var semua = document.querySelectorAll('.lp');
+      for (var k = 0; k < semua.length; k++) semua[k].className = 'lp' + (semua[k].querySelector('input').checked ? ' on' : '');
+    };
     var c = $('cleanJumat');
     if (c) c.onclick = function () {
       var today = ymd(new Date()), before = cfg.jumat.length;
