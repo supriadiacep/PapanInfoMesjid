@@ -168,7 +168,7 @@
   function sambungWs() {
     if (ws || !st.key || !global.WebSocket) return;
     try { ws = new WebSocket(base().replace(/^http/, 'ws') + '/api/player/ws?key=' + encodeURIComponent(st.key)); } catch (e) { return; }
-    ws.onopen = function () { wsDelay = 5000; };
+    ws.onopen = function () { wsDelay = 5000; muat(); }; // perubahan saat belum tersambung tidak terlewat
     ws.onmessage = function (e) {
       if (e.data === 'ubah') muat();
       else if (e.data === 'muat_ulang') location.reload();
