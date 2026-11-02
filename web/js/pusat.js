@@ -282,7 +282,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          app: 'Papan Info Masjid ' + (i.version || ''), version: st.cfg && st.cfg.version, item: sedangTayang,
+          app: 'LayarPintar TV ' + (i.version || ''), version: st.cfg && st.cfg.version, item: sedangTayang,
           online: st.online, ua: String(navigator.userAgent).slice(0, 200), screen: screen.width + 'x' + screen.height,
         }),
       });

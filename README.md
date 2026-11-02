@@ -1,4 +1,4 @@
-# Papan Info Masjid Baiturrahman
+# LayarPintar — Papan Info Masjid & TV Promosi
 
 Aplikasi papan informasi untuk TV masjid lewat Android TV box (STB):
 jam besar, jadwal sholat otomatis, hitung mundur iqomah, jadwal pengajian,
@@ -56,7 +56,7 @@ Pilih salah satu cara.
 2. Di box, buka aplikasi **File Manager**, pilih file APK, lalu **Install**.
    Jika muncul peringatan, izinkan *Sumber tidak dikenal / Install unknown apps*
    untuk File Manager.
-3. Buka aplikasi **Papan Info Masjid**.
+3. Buka aplikasi **LayarPintar**.
 
 Cara lain tanpa flashdisk (laptop & box satu jaringan):
 `adb connect <IP-box>` lalu `adb install -r papan-info-masjid.apk`.
@@ -64,11 +64,11 @@ Cara lain tanpa flashdisk (laptop & box satu jaringan):
 ### Agar langsung tampil saat box menyala
 
 Tekan tombol **Home** di remote. Box akan bertanya aplikasi layar utama mana
-yang dipakai: pilih **Papan Info Masjid → Selalu (Always)**.
+yang dipakai: pilih **LayarPintar → Selalu (Always)**.
 Setelah itu, setiap listrik menyala kembali, layar jadwal langsung tampil.
 
 Jika box tidak bertanya, buka *Pengaturan Android → Aplikasi → Aplikasi default
-→ Aplikasi layar utama (Home app)* dan pilih Papan Info Masjid.
+→ Aplikasi layar utama (Home app)* dan pilih LayarPintar.
 
 **Keluar dari mode papan info**: tekan OK di remote → masuk PIN → bagian **Sistem**
 → **Buka pengaturan Android**. Dari sana Anda bisa mengatur WiFi atau mengganti

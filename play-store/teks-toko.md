@@ -5,7 +5,7 @@ Salin ke **Play Console → Kehadiran di toko → Listingan toko utama**.
 ## Nama aplikasi (maks. 30 karakter)
 
 ```
-Papan Info Masjid
+LayarPintar: Papan Info Masjid
 ```
 
 ## Deskripsi singkat (maks. 80 karakter)
@@ -17,7 +17,7 @@ Jadwal sholat, iqomah & pengumuman masjid di layar TV. Jalan tanpa internet.
 ## Deskripsi lengkap (maks. 4000 karakter)
 
 ```
-Papan Info Masjid mengubah TV di masjid menjadi papan informasi digital yang rapi dan mudah dibaca jamaah. Cukup pasang di Android TV box (STB) yang tersambung ke TV, lalu atur isinya dari HP pengurus.
+LayarPintar mengubah TV di masjid menjadi papan informasi digital yang rapi dan mudah dibaca jamaah. Cukup pasang di Android TV box (STB) yang tersambung ke TV, lalu atur isinya dari HP pengurus.
 
 JADWAL SHOLAT OTOMATIS
 • Waktu Imsak, Subuh, Terbit, Dzuhur, Ashar, Maghrib, dan Isya dihitung otomatis dari koordinat masjid.
@@ -50,13 +50,19 @@ TANPA INTERNET
 • Mendeteksi jam box yang belum benar (misalnya setelah listrik padam) dan memberi petunjuk cara membetulkannya.
 • Terbuka otomatis saat TV box dinyalakan dan bisa dijadikan layar utama.
 
+DIKELOLA DARI PUSAT (OPSIONAL)
+• Untuk organisasi yang mengelola banyak masjid atau layar: sambungkan layar ke server pusat dengan kode 6 angka.
+• Pengumuman, gambar, video, dan YouTube dari pusat ikut tampil; pesan penting bisa tampil layar penuh.
+• Layar yang sama bisa dijadikan TV promosi dari panel pusat.
+• Jadwal sholat, kas, dan pengajian tetap diatur pengurus masjid.
+
 TAMPILAN NYAMAN DI LAYAR BESAR
 • Jam besar yang terbaca dari jauh.
 • Pilihan warna tema dan peredupan layar di malam hari.
 • Perlindungan layar dari bekas gambar (burn-in).
 
 PRIVASI
-Tidak ada iklan, tidak ada pelacakan, dan tidak ada data yang dikirim ke pengembang. Semua isi papan info hanya tersimpan di perangkat masjid.
+Tidak ada iklan dan tidak ada pelacakan. Isi papan info hanya tersimpan di perangkat masjid. Data status layar hanya dikirim bila pengurus sendiri menyalakan sambungan ke pusat.
 ```
 
 ## Kategori dan detail kontak

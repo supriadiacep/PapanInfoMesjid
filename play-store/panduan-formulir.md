@@ -51,15 +51,25 @@ Pilih **Semua atau sebagian fungsi dibatasi**, lalu tambahkan petunjuk untuk rev
 
 | Pertanyaan | Jawaban |
 |---|---|
-| Apakah aplikasi mengumpulkan atau membagikan jenis data pengguna yang diwajibkan? | **Tidak** |
+> Sejak fitur **Sambungan ke pusat** (November 2026), jawabannya berubah dari "Tidak" menjadi "Ya".
+> Fitur itu mati secara bawaan, tetapi bila dinyalakan aplikasi mengirim data perangkat ke server pusat.
 
-Setelah menjawab **Tidak**, formulir langsung ke ringkasan. Bagian toko akan menampilkan
-"Tidak ada data yang dikumpulkan" dan "Tidak ada data yang dibagikan ke pihak ketiga".
+| Pertanyaan | Jawaban |
+|---|---|
+| Apakah aplikasi mengumpulkan atau membagikan jenis data pengguna yang diwajibkan? | **Ya** |
+| Apakah semua data yang dikumpulkan dienkripsi saat transit? | **Ya** (HTTPS) |
+| Apakah Anda menyediakan cara bagi pengguna untuk meminta penghapusan data? | **Ya** (putus sambungan / hubungi kontak) |
 
-Alasannya (dari definisi Google): data yang diproses **hanya di perangkat** dan tidak pernah
-dikirim keluar dari perangkat tidak termasuk data yang "dikumpulkan". Pengaturan, PIN, dan foto
-masjid disimpan di penyimpanan internal box. Data yang dikirim dari HP ke box lewat WiFi lokal
-juga tidak melewati server pengembang.
+Jenis data yang dicentang:
+
+| Kategori → jenis | Dikumpulkan | Dibagikan | Wajib/opsional | Tujuan |
+|---|---|---|---|---|
+| ID perangkat atau ID lain → *Device or other IDs* (kunci perangkat acak) | Ya | Tidak | **Opsional** | Fungsi aplikasi |
+| Info & performa aplikasi → *Other app performance data* (versi, konten yang tampil, ukuran layar, user agent) | Ya | Tidak | **Opsional** | Fungsi aplikasi |
+
+Catatan: alamat IP yang terlihat server tidak dicentang tersendiri bila hanya dipakai untuk status layar
+(lihat definisi Google tentang data yang "dikumpulkan"); sebutkan di kebijakan privasi (sudah).
+Pengaturan, PIN, foto, kas, dan jadwal tetap hanya di perangkat dan **tidak** dikirim.
 
 ## 7. Deklarasi lain
 

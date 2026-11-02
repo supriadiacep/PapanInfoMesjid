@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kebijakan Privasi – Papan Info Masjid</title>
+<title>Kebijakan Privasi – LayarPintar</title>
 <style>
   :root { --bg: #FBF8F2; --fg: #1C2A2B; --muted: #4A5D5E; --accent: #0E2B2D; --line: #E3DCCF; }
   @media (prefers-color-scheme: dark) { :root { --bg: #0E2B2D; --fg: #F3EBDD; --muted: #9CCFC4; --accent: #D9A441; --line: #24494B; } }
@@ -20,17 +20,19 @@
 </head>
 <body>
 <main>
-<h1>Kebijakan Privasi Papan Info Masjid</h1>
-<p class="tgl">Berlaku sejak 29 Oktober 2026</p>
+<h1>Kebijakan Privasi LayarPintar</h1>
+<p class="tgl">Berlaku sejak 3 November 2026 (versi sebelumnya: 29 Oktober 2026)</p>
 
-<p>Papan Info Masjid adalah aplikasi untuk menampilkan jadwal sholat, hitung mundur iqomah,
-pengumuman, jadwal pengajian, dan laporan kas masjid di layar TV. Halaman ini menjelaskan
+<p>LayarPintar adalah aplikasi untuk menampilkan jadwal sholat, hitung mundur iqomah,
+pengumuman, jadwal pengajian, dan laporan kas masjid di layar TV, serta (bila disambungkan ke server pusat) konten TV promosi. Halaman ini menjelaskan
 data apa saja yang dipakai aplikasi dan bagaimana data itu diperlakukan.</p>
 
 <h2>Ringkasan</h2>
-<p><strong>Aplikasi ini tidak mengumpulkan, mengirim, atau membagikan data pribadi apa pun kepada
-pengembang maupun pihak lain.</strong> Aplikasi tidak memakai iklan, analitik, pelacakan,
-atau layanan pihak ketiga. Semua isi papan info hanya tersimpan di perangkat tempat aplikasi dipasang.</p>
+<p><strong>Dalam pemakaian biasa, aplikasi ini tidak mengumpulkan, mengirim, atau membagikan data apa pun.</strong>
+Aplikasi tidak memakai iklan, analitik, pelacakan, atau layanan pihak ketiga. Isi papan info hanya tersimpan
+di perangkat tempat aplikasi dipasang.</p>
+<p>Data perangkat baru dikirim keluar bila pengurus <strong>secara sengaja</strong> menyalakan fitur
+<em>Sambungan ke pusat</em> (lihat di bawah). Fitur ini mati secara bawaan.</p>
 
 <h2>Data yang disimpan di perangkat</h2>
 <p>Data berikut dimasukkan sendiri oleh pengurus masjid dan disimpan di penyimpanan internal aplikasi
@@ -50,10 +52,27 @@ diakses dari jaringan WiFi yang sama (misalnya <code>192.168.1.25:8080</code>). 
 dilindungi PIN dan tidak terhubung ke internet. Data yang dikirim dari HP langsung disimpan
 di perangkat TV, tidak melewati server pengembang.</p>
 
+<h2>Sambungan ke server pusat (opsional)</h2>
+<p>Bila papan info dikelola sebuah organisasi, pengurus dapat menyalakan <em>Pengaturan → Pusat →
+Sambungkan layar ini ke pusat</em>. Setelah dipasangkan dengan kode 6 angka oleh pengelola pusat,
+aplikasi berkomunikasi dengan server pusat (bawaan: <code>tv.pintarinovasi.co.id</code>) melalui koneksi
+terenkripsi (HTTPS) untuk:</p>
+<ul>
+  <li>mengambil konten dan pengumuman yang dikirim pengelola pusat (gambar, video, teks, tautan YouTube);</li>
+  <li>melaporkan status layar agar pengelola tahu layar menyala: kunci perangkat acak yang dibuat aplikasi,
+      versi aplikasi, nama konten yang sedang tampil, ukuran layar, jenis browser perangkat (<em>user agent</em>),
+      dan alamat IP yang terlihat oleh server.</li>
+</ul>
+<p>Data tersebut dipakai hanya untuk menjalankan fitur ini, tidak dijual, dan tidak dibagikan ke pihak lain.
+Isi papan info lokal (jadwal, kas, pengajian, PIN, foto) <strong>tidak</strong> dikirim ke server pusat.
+Video YouTube diputar langsung dari YouTube dan tunduk pada kebijakan privasi Google.
+Sambungan dapat diputus kapan saja di <em>Pengaturan → Pusat → Putuskan</em>; pengelola pusat juga dapat
+menghapus layar tersebut beserta catatannya dari server.</p>
+
 <h2>Izin yang dipakai</h2>
 <table>
   <tr><th>Izin</th><th>Kegunaan</th></tr>
-  <tr><td>Internet</td><td>Menjalankan server pengaturan di jaringan lokal (WiFi masjid).</td></tr>
+  <tr><td>Internet</td><td>Menjalankan server pengaturan di jaringan lokal (WiFi masjid) dan, bila diaktifkan, sambungan ke server pusat.</td></tr>
   <tr><td>Status jaringan &amp; WiFi</td><td>Menampilkan alamat yang perlu dibuka di HP untuk mengatur papan info.</td></tr>
   <tr><td>Berjalan saat perangkat menyala</td><td>Membuka papan info otomatis setelah TV box dinyalakan.</td></tr>
   <tr><td>Mencegah layar mati</td><td>Menjaga layar tetap menyala selama papan info tampil.</td></tr>
@@ -61,13 +80,13 @@ di perangkat TV, tidak melewati server pengembang.</p>
 
 <h2>Menghapus data</h2>
 <p>Semua data bisa dihapus kapan saja dengan menghapus data aplikasi
-(<em>Setelan → Aplikasi → Papan Info Masjid → Penyimpanan → Hapus data</em>) atau dengan
-meng-uninstall aplikasi. Karena pengembang tidak menyimpan salinan data apa pun, tidak ada
-data yang perlu diminta untuk dihapus dari pihak pengembang.</p>
+(<em>Setelan → Aplikasi → LayarPintar → Penyimpanan → Hapus data</em>) atau dengan
+meng-uninstall aplikasi. Bila fitur sambungan ke pusat pernah dipakai, catatan layar di server pusat dapat
+dihapus oleh pengelola pusat atau dengan menghubungi kontak di bawah.</p>
 
 <h2>Anak-anak</h2>
 <p>Aplikasi ini ditujukan untuk pengurus masjid dan tidak ditujukan untuk anak-anak.
-Aplikasi tidak mengumpulkan data dari siapa pun, termasuk anak-anak.</p>
+Aplikasi tidak mengumpulkan data pribadi dari siapa pun, termasuk anak-anak.</p>
 
 <h2>Perubahan kebijakan</h2>
 <p>Bila kebijakan ini berubah, versi terbaru akan dipasang di halaman ini dengan tanggal berlaku yang baru.</p>
