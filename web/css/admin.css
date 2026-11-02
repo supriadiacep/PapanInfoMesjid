@@ -137,3 +137,12 @@ tr.today td { color: var(--brass); font-weight: 700; }
   body.on-tv { font-size: 19px; }
   body.on-tv .content { max-width: 980px; }
 }
+
+/* dibuka dari panel pusat LayarPintar: warna mengikuti tema PIM (biru, kuning) */
+body.mode-pusat {
+  --bg: #ffffff; --bg-2: #f2f6fb; --bg-3: #e5f2fb; --line: #cfdae8;
+  --text: #0f2340; --muted: #5b6b82; --brass: #0378b7; --brass-ink: #ffffff;
+  --danger: #c62828; --ok: #15803d;
+  color-scheme: light;
+}
+body.mode-pusat .toast.bad { color: #fff; }

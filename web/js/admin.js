@@ -9,6 +9,7 @@
 
   var cfg = null, pin = '', server = false, dirty = false, current = 'masjid';
   var onTv = !!window.Android || /MasjidTV/.test(navigator.userAgent);
+  if (MasjidStore.pusatAdmin) document.body.classList.add('mode-pusat');
   if (onTv) document.body.classList.add('on-tv');
 
   // ---------- util ----------
