@@ -145,6 +145,7 @@
 
   function renderTicker() {
     var items = (cfg.info.runningText || []).filter(function (s) { return String(s).trim(); });
+    if (window.MasjidPusat) items = items.concat(MasjidPusat.ticker()); // teks berjalan dari pusat
     var text = items.join('\u0000');
     if (text === lastTickerText) return;
     lastTickerText = text;
@@ -232,6 +233,12 @@
     if (foto && cfg.tampilan.foto.panel) {
       s.unshift('<figure class="foto"><img src="' + esc(foto) + '" alt="Foto ' + esc(cfg.masjid.nama) + '"></figure>');
     }
+    // konten & pesan dari server pusat (bila disambungkan)
+    if (window.MasjidPusat) MasjidPusat.slides().forEach(function (p) {
+      var h = '<div class="pusat-slide" data-durasi="' + (p.detik || 0) + '"' + (p.penuh ? ' data-penuh="' + p.penuh + '"' : '') +
+        ' data-judul="' + esc(p.judul || '') + '">' + p.html + '</div>';
+      if (p.awal) s.unshift(h); else s.push(h);
+    });
     if (!s.length) s.push('<h3>' + esc(cfg.masjid.nama) + '</h3><p class="announce">Isi jadwal pengajian dan pengumuman lewat menu Pengaturan.</p>');
     return s;
   }
@@ -266,6 +273,11 @@
     setTimeout(function () {
       el.innerHTML = '<div class="fit">' + slides[slideIdx] + '</div>';
       fitSlide(el);
+      if (window.MasjidPusat) {
+        var pp = /data-penuh="(\d+)"/.exec(slides[slideIdx]), jd = /data-judul="([^"]*)"/.exec(slides[slideIdx]);
+        MasjidPusat.sedang(jd ? jd[1] : '');
+        if (pp) MasjidPusat.tampilPenuh(+pp[1], slideSec(slideIdx));
+      }
       el.classList.remove('out');
       // ulangi setelah huruf selesai dimuat (ukuran teks bisa berubah)
       setTimeout(function () { fitSlide(el); }, 1500);
@@ -280,10 +292,19 @@
     if (changed) showSlide(Math.min(slideIdx, slides.length - 1));
   }
 
+  // lama tampil per panel: bawaan dari pengaturan; konten pusat (mis. video) membawa lamanya sendiri
+  function slideSec(i) {
+    var m = /data-durasi="(\d+)"/.exec(slides[i] || '');
+    var dasar = Math.max(5, +cfg.tampilan.slideDetik || 12);
+    return m && +m[1] > 0 ? Math.max(3, +m[1]) : dasar;
+  }
   function startSlideTimer() {
-    clearInterval(slideTimer);
-    var sec = Math.max(5, +cfg.tampilan.slideDetik || 12);
-    slideTimer = setInterval(function () { refreshSlides(false); if (slides.length > 1) showSlide(slideIdx + 1); }, sec * 1000);
+    clearTimeout(slideTimer);
+    slideTimer = setTimeout(function () {
+      refreshSlides(false);
+      if (slides.length > 1) showSlide(slideIdx + 1);
+      startSlideTimer();
+    }, slideSec(slideIdx) * 1000 + 600);
   }
 
   // ---------- layar penuh ----------
@@ -388,6 +409,7 @@
       var st = status(d);
       renderCountdown(d, st);
       overlay(st, d);
+      if (window.MasjidPusat) MasjidPusat.tick(st.mode);
       modeChanged(st);
       renderDim(d, st);
       // muat ulang halaman sekali sehari pukul 02:xx agar memori box tetap segar
@@ -410,6 +432,7 @@
     renderBackground();
     refreshSlides(true);
     startSlideTimer();
+    if (window.MasjidPusat) MasjidPusat.start(cfg, function () { lastTickerText = null; renderTicker(); refreshSlides(false); });
   }
 
   function renderBackground() {

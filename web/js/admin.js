@@ -77,6 +77,7 @@
     { id: 'info', label: 'Pengumuman', render: renderInfo },
     { id: 'kas', label: 'Kas masjid', render: renderKas },
     { id: 'tampilan', label: 'Tampilan', render: renderTampilan },
+    { id: 'pusat', label: 'Pusat', render: renderPusat },
     { id: 'sistem', label: 'Sistem', render: renderSistem }
   ];
 
@@ -199,6 +200,30 @@
         field({ path: 'tampilan.redup.mulai', label: 'Mulai', type: 'time' }) +
         field({ path: 'tampilan.redup.selesai', label: 'Selesai', type: 'time' }) +
         field({ path: 'tampilan.redup.persen', label: 'Kecerahan saat redup (%)', type: 'number', min: 15, max: 100, step: 5 }));
+  }
+
+  function renderPusat() {
+    return '<h2>Sambungan ke pusat</h2><p class="section-intro">Bila masjid ini dikelola sebuah organisasi, pengelola pusat bisa mengirim pengumuman, gambar, video, dan YouTube ke layar ini. ' +
+      'Jadwal sholat, iqomah, pengajian, petugas Jumat, dan kas tetap diatur dari sini.</p>' +
+      group('Pengaturan', '',
+        field({ path: 'pusat.aktif', label: 'Sambungkan layar ini ke pusat', type: 'check' }) +
+        field({ path: 'pusat.server', label: 'Alamat server pusat', help: 'Biasanya tidak perlu diubah.', wide: true })) +
+      '<div class="group"><h3>Status</h3><div class="callout" id="pusatInfo">Memeriksa…</div>' +
+      '<div class="btn-row" style="margin-top:0.8rem"><button type="button" class="btn danger" id="pusatReset">Putuskan &amp; minta kode baru</button></div></div>' +
+      '<div class="group"><h3>Cara menyambungkan</h3><ol class="steps"><li>Centang <b>Sambungkan layar ini ke pusat</b>, lalu tekan <b>Simpan</b>.</li>' +
+      '<li>Kode 6 angka muncul di layar TV (dan di bagian Status di atas).</li>' +
+      '<li>Kirim kode itu ke pengelola pusat. Setelah dipasangkan, konten dari pusat ikut tampil bergiliran.</li></ol>' +
+      '<p>Tanpa internet, konten pusat yang sudah tersimpan di box tetap tampil (kecuali YouTube dan halaman web).</p></div>';
+  }
+
+  function renderPusatInfo() {
+    var el = $('pusatInfo'); if (!el) return;
+    if (!cfg.pusat || !cfg.pusat.aktif) { el.innerHTML = 'Tidak tersambung ke pusat.'; return; }
+    MasjidStore.pusatGet().then(function (p) {
+      if (p && p.paired && p.name) el.innerHTML = 'Tersambung ke pusat sebagai layar <b>' + esc(p.name) + '</b>.';
+      else if (p && p.code) el.innerHTML = 'Menunggu dipasangkan. Kode pemasangan: <b style="font-size:1.4em;letter-spacing:0.1em">' + esc(p.code.slice(0, 3) + ' ' + p.code.slice(3)) + '</b>';
+      else el.innerHTML = 'Belum ada kode. Pastikan pengaturan sudah disimpan dan box tersambung internet, lalu tunggu sebentar.';
+    });
   }
 
   function renderSistem() {
@@ -326,7 +351,7 @@
     var sec = SECTIONS.filter(function (s) { return s.id === id; })[0] || SECTIONS[0];
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function (t) { t.setAttribute('aria-selected', t.dataset.tab === sec.id ? 'true' : 'false'); });
     $('content').innerHTML = sec.render();
-    renderPreview(); renderNet(); renderClockInfo(); renderPowerInfo();
+    renderPreview(); renderNet(); renderClockInfo(); renderPowerInfo(); renderPusatInfo();
     bindSpecial();
   }
 
@@ -576,4 +601,14 @@
       else { $('loginErr').textContent = 'PIN salah. Coba lagi.'; $('pin').value = ''; $('pin').focus(); }
     }).catch(function () { $('loginErr').textContent = 'Tidak bisa menghubungi box. Periksa WiFi.'; });
   });
+  // tombol "Putuskan & minta kode baru" di bagian Pusat
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#pusatReset'); if (!b) return;
+    if (!armed(b, 'Yakin putuskan?')) return;
+    MasjidStore.pusatReset(pin).then(function () {
+      toast('Sambungan diputus. Kode baru muncul di layar TV dalam beberapa detik.');
+      setTimeout(renderPusatInfo, 6000);
+    }, function (err) { toast(err.message, true); });
+  });
 })();
+

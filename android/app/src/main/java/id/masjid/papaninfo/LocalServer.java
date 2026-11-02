@@ -49,7 +49,7 @@ public class LocalServer {
     private static final String DEFAULT_PIN = "1234";
 
     private final Assets assets;
-    private final File configFile, pinFile, photoFile, portFile;
+    private final File configFile, pinFile, photoFile, portFile, pusatFile;
     private final Object lock = new Object();
     private final ExecutorService pool = Executors.newFixedThreadPool(4);
     private final String version;
@@ -71,6 +71,7 @@ public class LocalServer {
         this.pinFile = new File(dataDir, "pin.txt");
         this.portFile = new File(dataDir, "port.txt");
         this.photoFile = new File(dataDir, "foto-masjid.jpg");
+        this.pusatFile = new File(dataDir, "pusat.json");
         this.version = version;
     }
 
@@ -283,6 +284,29 @@ public class LocalServer {
             if (path.equals("/api/photo-delete") && r.method.equals("POST")) {
                 if (!checkPin(r)) { send(out, 403, "application/json", "{\"error\":\"pin\"}".getBytes(UTF8)); return; }
                 synchronized (lock) { if (photoFile.exists()) photoFile.delete(); }
+                send(out, 200, "application/json", "{\"ok\":true}".getBytes(UTF8));
+                return;
+            }
+            // ---------- sambungan ke server pusat (LayarPintar) ----------
+            // pusat.json berisi kunci perangkat; hanya layar TV sendiri yang boleh membaca kunci & menulis
+            if (path.equals("/api/pusat") && r.method.equals("GET")) {
+                String s;
+                synchronized (lock) { s = pusatFile.exists() ? new String(readFile(pusatFile), UTF8) : "{}"; }
+                if (!r.local) s = s.replaceAll("\"key\":\"[^\"]*\"", "\"key\":\"(tersimpan)\""); // JSON tanpa spasi (JSON.stringify)
+                send(out, 200, "application/json", s.getBytes(UTF8));
+                return;
+            }
+            if (path.equals("/api/pusat") && r.method.equals("POST")) {
+                if (!r.local) { send(out, 403, "application/json", "{\"error\":\"local\"}".getBytes(UTF8)); return; }
+                String s = new String(r.body, UTF8).trim();
+                if (!s.startsWith("{") || !s.endsWith("}") || s.length() > 4096) { send(out, 400, "application/json", "{\"error\":\"json\"}".getBytes(UTF8)); return; }
+                synchronized (lock) { writeAtomic(pusatFile, s.getBytes(UTF8)); }
+                send(out, 200, "application/json", "{\"ok\":true}".getBytes(UTF8));
+                return;
+            }
+            if (path.equals("/api/pusat-reset") && r.method.equals("POST")) {
+                if (!r.local && !checkPin(r)) { send(out, 403, "application/json", "{\"error\":\"pin\"}".getBytes(UTF8)); return; }
+                synchronized (lock) { if (pusatFile.exists()) pusatFile.delete(); }
                 send(out, 200, "application/json", "{\"ok\":true}".getBytes(UTF8));
                 return;
             }

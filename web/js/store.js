@@ -71,6 +71,11 @@
       redup: { aktif: true, mulai: '22:00', selesai: '03:30', persen: 40 },
       foto: { ada: false, versi: 0, latar: true, panel: true },
       tampilkanAlamatAdmin: true
+    },
+    // sambungan ke server pusat LayarPintar: pesan, gambar, video & YouTube dari pengelola pusat
+    pusat: {
+      aktif: false,
+      server: 'https://tv.pintarinovasi.co.id'
     }
   };
 
@@ -248,7 +253,36 @@
     return h + ' jam' + (r ? ' ' + r + ' menit' : '');
   }
 
+  // ---------- sambungan pusat (kunci perangkat) ----------
+  // Di box: disimpan di file pusat.json lewat server lokal (hanya layar TV sendiri yang boleh menulis).
+  // Di browser laptop: localStorage.
+  var LS_PUSAT = 'masjidtv-pusat';
+  function pusatGet() {
+    return detect().then(function (server) {
+      if (server) return fetch('/api/pusat', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
+      try { return JSON.parse(lsGet(LS_PUSAT) || '{}'); } catch (e) { return {}; }
+    });
+  }
+  function pusatSet(obj) {
+    var body = JSON.stringify(obj || {});
+    return detect().then(function (server) {
+      if (server) return fetch('/api/pusat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body }).then(function (r) { return r.ok; });
+      return lsSet(LS_PUSAT, body);
+    });
+  }
+  function pusatReset(pin) {
+    return detect().then(function (server) {
+      if (server) {
+        return fetch('/api/pusat-reset', { method: 'POST', headers: { 'X-Pin': pin || '' } })
+          .then(function (r) { if (!r.ok) throw new Error(r.status === 403 ? 'PIN salah' : 'Gagal memutuskan sambungan'); return true; });
+      }
+      try { global.localStorage.removeItem(LS_PUSAT); } catch (e) {}
+      return true;
+    });
+  }
+
   global.MasjidStore = {
+    pusatGet: pusatGet, pusatSet: pusatSet, pusatReset: pusatReset, LS_PUSAT: LS_PUSAT,
     sleepRisk: sleepRisk, fmtDuration: fmtDuration,
     resetPin: resetPin, clock: clock, syncClock: syncClock, photoUrl: photoUrl, uploadPhoto: uploadPhoto, deletePhoto: deletePhoto, LS_PHOTO: LS_PHOTO,
     DEFAULTS: DEFAULTS, LS_KEY: LS_KEY,

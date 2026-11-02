@@ -249,3 +249,29 @@ body.preview { cursor: default; }
   .ticker-text { -webkit-animation-duration: 0s !important; animation-duration: 0s !important; padding-left: 0; }
   #stage, .slide, .dim { -webkit-transition: none; transition: none; }
 }
+
+/* ---------- konten & pesan dari server pusat ---------- */
+.pusat-slide { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+.pusat-media { margin: 0; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; background: #000; border-radius: 0.6rem; overflow: hidden; }
+.pusat-media img, .pusat-media video { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pusat-media iframe { width: 100%; height: 100%; border: 0; display: block; }
+.pusat-teks { -webkit-flex: 1 1 0%; flex: 1 1 0%; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: center; justify-content: center; text-align: center; padding: 1.5rem; border-radius: 0.6rem; white-space: pre-line; }
+.pusat-teks p { font-size: 1.7rem; line-height: 1.45; }
+.pusat-kode { font-size: 4.2rem; font-weight: 800; letter-spacing: 0.12em; color: var(--brass); margin: 0.6rem 0 1rem; }
+.pusat-pesan { -webkit-flex: 1 1 0%; flex: 1 1 0%; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; gap: 1.5rem; border-radius: 0.6rem; padding: 1.2rem; background: rgba(0, 0, 0, 0.25); }
+.pusat-pesan.p-penting { background: rgba(217, 164, 65, 0.18); }
+.pusat-pesan.p-darurat { background: rgba(160, 30, 30, 0.45); }
+.pusat-pesan .pp-media { -webkit-flex: 1.2 1 0%; flex: 1.2 1 0%; height: 100%; display: -webkit-flex; display: flex; }
+.pusat-pesan .pp-teks { -webkit-flex: 1 1 0%; flex: 1 1 0%; text-align: center; white-space: pre-line; }
+.pusat-pesan.ada-media .pp-teks { text-align: left; }
+.pusat-pesan .pp-label { display: inline-block; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brass); margin-bottom: 0.8rem; }
+.pusat-pesan h3 { font-size: 2rem; margin-bottom: 0.8rem; }
+.pusat-pesan p { font-size: 1.6rem; line-height: 1.45; }
+
+/* layar penuh: di atas layar biasa, di bawah layar adzan/iqomah/sholat (z-index 10) */
+.pusat-penuh { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 8; background: var(--night); display: -webkit-flex; display: flex; padding: 3vmin; }
+.pusat-penuh[hidden] { display: none; }
+.pusat-penuh .pusat-pesan { background: var(--ink); }
+.pusat-penuh .pusat-pesan.p-darurat { background: linear-gradient(135deg, #2a0707, #7f1d1d); }
+.pusat-penuh .pusat-pesan h3 { font-size: 3.4rem; }
+.pusat-penuh .pusat-pesan p { font-size: 2.4rem; }
