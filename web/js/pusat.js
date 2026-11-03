@@ -26,18 +26,17 @@
   // Jam memakai zona waktu lokasi (WIB/WITA/WIT) dari jam server, tidak tergantung jam box.
   var ZONA = { WIB: 7, WITA: 8, WIT: 9 };
   function keMenit(t) { var p = String(t || '').split(':'), h = parseInt(p[0], 10), m = parseInt(p[1], 10); return isNaN(h) || isNaN(m) ? null : h * 60 + m; }
+  function jamLokal() { var tz = ZONA[((st.cfg && st.cfg.location) || {}).tz] || 7; return new Date(sekarang() + tz * 3600e3); }
+  // apakah jam lokal d masuk jadwal {hari, mulai, selesai}; boleh melewati tengah malam
+  function cocokJam(j, d) {
+    var hari = d.getUTCDay(), kemarin = (hari + 6) % 7, m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    var a = keMenit(j.mulai), b = keMenit(j.selesai), h = j.hari || [0, 1, 2, 3, 4, 5, 6];
+    if (a == null || b == null) return false;
+    return a < b ? (h.indexOf(hari) >= 0 && m >= a && m < b) : ((h.indexOf(hari) >= 0 && m >= a) || (h.indexOf(kemarin) >= 0 && m < b));
+  }
   function jadwalAktif() {
-    var daftar = (st.cfg && st.cfg.jadwal) || [];
-    if (!daftar.length) return null;
-    var tz = ZONA[(st.cfg.location || {}).tz] || 7;
-    var d = new Date(sekarang() + tz * 3600e3), hari = d.getUTCDay(), kemarin = (hari + 6) % 7, m = d.getUTCHours() * 60 + d.getUTCMinutes();
-    for (var n = 0; n < daftar.length; n++) {
-      var j = daftar[n], a = keMenit(j.mulai), b = keMenit(j.selesai), h = j.hari || [0, 1, 2, 3, 4, 5, 6];
-      if (a == null || b == null) continue;
-      var kena = a < b ? (h.indexOf(hari) >= 0 && m >= a && m < b)
-        : ((h.indexOf(hari) >= 0 && m >= a) || (h.indexOf(kemarin) >= 0 && m < b)); // melewati tengah malam
-      if (kena) return j;
-    }
+    var daftar = (st.cfg && st.cfg.jadwal) || [], d = jamLokal();
+    for (var n = 0; n < daftar.length; n++) if (cocokJam(daftar[n], d)) return daftar[n];
     return null;
   }
   // jadwal tanpa daftar putar (items null) hanya mengganti gambar layar
@@ -259,7 +258,7 @@
   // ---------- isi untuk layar ----------
   function aktifPesan(m) {
     var t = sekarang(), a = new Date(m.start).getTime(), b = m.end ? new Date(m.end).getTime() : Infinity;
-    return a <= t && t < b;
+    return a <= t && t < b && (!m.jadwal || cocokJam(m.jadwal, jamLokal()));
   }
   function pesan() { return st.aktif && st.cfg ? (st.cfg.messages || []).filter(aktifPesan) : []; }
   function butuhInternet(k) { return k === 'youtube' || k === 'web' || k === 'siaran'; }
