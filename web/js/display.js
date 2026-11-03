@@ -518,13 +518,13 @@
   function mulaiGambar() {
     clearInterval(gambarTimer);
     var g = cfg.tampilan.gambar || {};
-    if ((g.daftar || []).length < 2) return;
-    gambarTimer = setInterval(function () { gambarKe++; renderMedia(); }, Math.max(5, +g.detik || 15) * 1000);
+    gambarTimer = setInterval(function () { gambarKe++; renderMedia(); }, Math.min(30, Math.max(5, +g.detik || 15)) * 1000);
   }
   function renderMedia() {
     var el = $('media'), stage = $('stage'), L = MasjidLayout.cari(cfg.tampilan.layout);
     var lv = cfg.tampilan.live || {}, foto = MasjidStore.photoUrl(cfg);
-    var gb = ((cfg.tampilan.gambar && cfg.tampilan.gambar.daftar) || []).filter(function (x) { return x && x.url; });
+    var gj = window.MasjidPusat && MasjidPusat.gambarJadwal ? MasjidPusat.gambarJadwal() : null; // jadwal tayang dari pusat
+    var gb = (gj || (cfg.tampilan.gambar && cfg.tampilan.gambar.daftar) || []).filter(function (x) { return x && x.url; });
     var online = navigator.onLine !== false;
     var src = L.media && lv.aktif && online ? ytEmbed(lv.url, lv.suara) : null;
     var isi, jenis;

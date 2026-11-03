@@ -40,7 +40,14 @@
     }
     return null;
   }
-  function isiTayang() { var j = jadwalAktif(); return j ? j.items || [] : (st.cfg && st.cfg.items) || []; }
+  // jadwal tanpa daftar putar (items null) hanya mengganti gambar layar
+  function isiTayang() { var j = jadwalAktif(); return j && j.items ? j.items : (st.cfg && st.cfg.items) || []; }
+  // gambar layar dari jadwal aktif (null = pakai Gambar layar biasa)
+  function gambarJadwal() {
+    if (!st.aktif || !st.paired) return null;
+    var j = jadwalAktif();
+    return j && j.gambar && j.gambar.length ? j.gambar.map(function (u) { return { url: abs(u) }; }) : null;
+  }
   function lsGet(k) { try { return global.localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { if (v == null) global.localStorage.removeItem(k); else global.localStorage.setItem(k, v); } catch (e) { } }
 
@@ -210,7 +217,10 @@
     var out = [];
     if (!st.cfg) return out;
     (st.cfg.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); });
-    (st.cfg.jadwal || []).forEach(function (j) { (j.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); }); });
+    (st.cfg.jadwal || []).forEach(function (j) {
+      (j.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); });
+      (j.gambar || []).forEach(function (u) { out.push(abs(u)); });
+    });
     // gambar layar pilihan (Tampilan > Gambar layar) ikut disimpan agar tampil saat offline
     var g = st.lokal && st.lokal.tampilan && st.lokal.tampilan.gambar;
     ((g && g.daftar) || []).forEach(function (x) { if (x && x.url) out.push(abs(x.url)); });
@@ -353,7 +363,7 @@
   }
 
   global.MasjidPusat = {
-    start: start, slides: slides, ticker: ticker, tick: tick, tampilPenuh: tampilPenuh, sedang: sedang, url: url,
+    start: start, slides: slides, ticker: ticker, tick: tick, tampilPenuh: tampilPenuh, sedang: sedang, url: url, gambarJadwal: gambarJadwal,
     status: function () { return { aktif: st.aktif, server: st.server, paired: st.paired, code: st.code, name: st.name, online: st.online, err: st.err }; },
   };
 })(window);
