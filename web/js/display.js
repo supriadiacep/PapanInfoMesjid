@@ -513,13 +513,26 @@
   }
   setInterval(function () { if (cfg) renderMedia(); }, 30 * 60000);
   var mediaKini = '';
+  // gambar layar bergantian
+  var gambarKe = 0, gambarTimer = null;
+  function mulaiGambar() {
+    clearInterval(gambarTimer);
+    var g = cfg.tampilan.gambar || {};
+    if ((g.daftar || []).length < 2) return;
+    gambarTimer = setInterval(function () { gambarKe++; renderMedia(); }, Math.max(5, +g.detik || 15) * 1000);
+  }
   function renderMedia() {
     var el = $('media'), stage = $('stage'), L = MasjidLayout.cari(cfg.tampilan.layout);
     var lv = cfg.tampilan.live || {}, foto = MasjidStore.photoUrl(cfg);
+    var gb = ((cfg.tampilan.gambar && cfg.tampilan.gambar.daftar) || []).filter(function (x) { return x && x.url; });
     var online = navigator.onLine !== false;
     var src = L.media && lv.aktif && online ? ytEmbed(lv.url, lv.suara) : null;
     var isi, jenis;
     if (src) { jenis = 'live:' + src; isi = '<iframe src="' + esc(src) + '" allow="autoplay; encrypted-media" frameborder="0" referrerpolicy="strict-origin-when-cross-origin"></iframe>'; }
+    else if (L.media && gb.length) {
+      var g = gb[gambarKe % gb.length], gu = window.MasjidPusat ? MasjidPusat.url(g.url) : g.url;
+      jenis = 'gambar:' + gu; isi = '<img src="' + esc(gu) + '" alt="">';
+    }
     else if (L.media && foto) { jenis = 'foto:' + foto; isi = '<img src="' + esc(foto) + '" alt="">'; }
     else {
       jenis = 'hias:' + cfg.masjid.nama;
@@ -527,7 +540,7 @@
         '<p>' + esc(cfg.masjid.nama) + '</p></div>';
     }
     el.hidden = !L.media;
-    stage.className = (src || foto) && L.media ? 'ada-media' : 'tanpa-media';
+    stage.className = (src || gb.length || foto) && L.media ? 'ada-media' : 'tanpa-media';
     if (jenis !== mediaKini) { el.innerHTML = isi; mediaKini = jenis; } // siaran tidak dimuat ulang bila tidak berubah
   }
   window.addEventListener('online', function () { if (cfg) renderMedia(); });
@@ -541,12 +554,13 @@
     siapkanAnalog();
     acaraKey = '';
     renderMedia();
+    mulaiGambar();
     lastDayKey = ''; lastTickerText = null;
     renderTicker();
     renderBackground();
     refreshSlides(true);
     startSlideTimer();
-    if (window.MasjidPusat) MasjidPusat.start(cfg, function () { lastTickerText = null; renderTicker(); refreshSlides(false); });
+    if (window.MasjidPusat) MasjidPusat.start(cfg, function () { lastTickerText = null; renderTicker(); refreshSlides(false); renderMedia(); });
   }
 
   function renderBackground() {

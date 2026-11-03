@@ -77,6 +77,8 @@
       acara: true,           // hitung mundur hari besar Islam
       // siaran langsung YouTube (mis. Makkah / Madinah) di tata letak yang punya layar besar
       live: { aktif: false, url: '', suara: false },
+      // gambar di layar besar bila siaran tidak tampil / offline (bergantian bila lebih dari satu)
+      gambar: { daftar: [], detik: 15 },
       slideDetik: 12,
       redup: { aktif: true, mulai: '22:00', selesai: '03:30', persen: 40 },
       foto: { ada: false, versi: 0, latar: true, panel: true },

@@ -321,6 +321,7 @@
       '<button type="button" class="btn" data-live="UCos52azQNBgW63_9uDJoPDA">🕋 Makkah (KSA Qur\'an TV)</button>' +
       '<button type="button" class="btn" data-live="UCROKYPep-UuODNwyipe6JMw">🕌 Madinah (Saudi Sunnah TV)</button></div>' +
       '<div class="grid" style="margin-top:0.8rem">' + field({ path: 'tampilan.live.suara', label: 'Bunyikan suara siaran', type: 'check' }) + '</div></div>' +
+      renderGambarLayar() +
       group('Umum', '',
         field({ path: 'tampilan.tema', label: 'Warna tema', type: 'select', options: [['zamrud', 'Hijau toska'], ['malam', 'Biru malam'], ['kayu', 'Coklat kayu'], ['samudra', 'Biru samudra & emas'], ['terang', 'Terang (ruangan cerah)']] }) +
         field({ path: 'tampilan.slideDetik', label: 'Ganti panel tiap (detik)', type: 'number', min: 5, max: 120, step: 1 }) +
@@ -330,6 +331,49 @@
         field({ path: 'tampilan.redup.mulai', label: 'Mulai', type: 'time' }) +
         field({ path: 'tampilan.redup.selesai', label: 'Selesai', type: 'time' }) +
         field({ path: 'tampilan.redup.persen', label: 'Kecerahan saat redup (%)', type: 'number', min: 15, max: 100, step: 5 }));
+  }
+
+  // ---------- gambar layar (tampil di layar besar bila siaran tidak tampil / offline) ----------
+  function renderGambarLayar() {
+    var g = cfg.tampilan.gambar = cfg.tampilan.gambar || { daftar: [], detik: 15 };
+    g.daftar = g.daftar || [];
+    var dipilih = g.daftar.map(function (x, i) {
+      return '<div class="gl-item"><img src="' + esc(x.url) + '" alt=""><span>' + esc(x.judul || 'Gambar ' + (i + 1)) + '</span>' +
+        '<button type="button" class="icon-btn del" data-glhapus="' + i + '" aria-label="Hapus">✕</button></div>';
+    }).join('');
+    return '<div class="group"><h3>Gambar layar</h3><p>Tampil di layar besar (tata letak Sinema, Kolom, Galeri, Tegak) bila siaran langsung tidak dipakai atau internet putus — misalnya foto masjid. Lebih dari satu gambar akan bergantian. Gambar disimpan di box, jadi tetap tampil saat offline.</p>' +
+      '<div class="gl-daftar">' + (dipilih || '<div class="empty">Belum ada gambar. ' + (MasjidStore.photoUrl(cfg) ? 'Layar memakai Foto masjid.' : '') + '</div>') + '</div>' +
+      (PUSAT ? '<h3 style="margin-top:1rem;font-size:0.95rem">Pilih dari Pustaka media pusat</h3><div class="gl-pustaka" id="glPustaka">Memuat…</div>'
+        : '<div class="add-row"><input id="glUrl" placeholder="https://… alamat gambar (jpg/png)" style="flex:1;min-width:220px"><button type="button" class="btn" id="glTambah">Tambah gambar</button></div>' +
+          '<p style="margin-top:0.5rem">Foto dari HP: unggah di bagian <b>Masjid → Foto masjid</b>. Gambar dari pustaka pusat dipilih oleh pengelola pusat.</p>') +
+      '<div class="grid" style="margin-top:0.8rem">' + field({ path: 'tampilan.gambar.detik', label: 'Ganti gambar tiap (detik)', type: 'number', min: 5, max: 600, step: 1 }) + '</div></div>';
+  }
+  function bindGambarLayar() {
+    var g = cfg.tampilan.gambar; if (!g) return;
+    var hp = document.querySelectorAll('[data-glhapus]');
+    for (var i = 0; i < hp.length; i++) hp[i].onclick = function () { g.daftar.splice(+this.getAttribute('data-glhapus'), 1); markDirty(); rerender(); };
+    var tb = $('glTambah');
+    if (tb) tb.onclick = function () {
+      var u = ($('glUrl').value || '').trim();
+      if (!/^https?:\/\//.test(u)) { toast('Alamat gambar harus diawali https://', true); return; }
+      g.daftar.push({ url: u, judul: u.split('/').pop() }); markDirty(); rerender();
+    };
+    var el = $('glPustaka'); if (!el) return;
+    fetch('/api/media', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (m) {
+      var gbr = (m || []).filter(function (x) { return x.kind === 'gambar' && x.status === 'siap' && x.file; });
+      if (!gbr.length) { el.innerHTML = '<div class="empty">Belum ada gambar di Pustaka media. Unggah dulu di menu Pustaka media.</div>'; return; }
+      el.innerHTML = gbr.map(function (x) {
+        var u = location.origin + '/media/' + x.file, on = g.daftar.some(function (d) { return d.url === u; });
+        return '<button type="button" class="gl-pilih' + (on ? ' on' : '') + '" data-glurl="' + esc(u) + '" data-gljudul="' + esc(x.title) + '"><img src="' + esc(u) + '" alt=""><span>' + esc(x.title) + '</span></button>';
+      }).join('');
+      var b = el.querySelectorAll('[data-glurl]');
+      for (var k = 0; k < b.length; k++) b[k].onclick = function () {
+        var u = this.getAttribute('data-glurl'), ada = -1;
+        g.daftar.forEach(function (d, n) { if (d.url === u) ada = n; });
+        if (ada >= 0) g.daftar.splice(ada, 1); else g.daftar.push({ url: u, judul: this.getAttribute('data-gljudul') });
+        markDirty(); rerender();
+      };
+    }, function () { el.textContent = 'Pustaka media tidak bisa dimuat.'; });
   }
 
   function renderPusat() {
@@ -557,6 +601,7 @@
   }
 
   function bindSpecial() {
+    bindGambarLayar();
     // tombol pintas siaran Makkah / Madinah
     var lv = document.querySelectorAll('[data-live]');
     for (var li = 0; li < lv.length; li++) lv[li].onclick = function () {

@@ -62,6 +62,7 @@
     if (st.mulai && aktif === st.aktif && server === st.server) {
       // pengurus baru menyimpan dari HP: segera kirim ke pusat
       if (aktif && st.paired && conf && conf.diubah && conf.diubah !== diubahLama) muat();
+      if (aktif && st.cfg) simpanMedia(); // gambar layar bisa berubah
       return;
     }
     stop();
@@ -69,6 +70,7 @@
     st.key = ''; st.code = ''; st.paired = false; st.cfg = null;
     if (!aktif) { onChange(); return; }
     try { var c = JSON.parse(lsGet(LS_CFG) || 'null'); if (c && c.server === server) { st.cfg = c.cfg; st.paired = true; } } catch (e) { }
+    if (st.cfg) simpanMedia(); // menyala tanpa internet: pakai media yang sudah tersimpan di box
     global.MasjidStore.pusatGet().then(function (s) {
       if (s && s.server === server && s.key && s.key !== '(tersimpan)') { st.key = s.key; st.code = s.code || ''; st.name = s.name || ''; }
       muat();
@@ -209,6 +211,9 @@
     if (!st.cfg) return out;
     (st.cfg.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); });
     (st.cfg.jadwal || []).forEach(function (j) { (j.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); }); });
+    // gambar layar pilihan (Tampilan > Gambar layar) ikut disimpan agar tampil saat offline
+    var g = st.lokal && st.lokal.tampilan && st.lokal.tampilan.gambar;
+    ((g && g.daftar) || []).forEach(function (x) { if (x && x.url) out.push(abs(x.url)); });
     (st.cfg.messages || []).forEach(function (m) { if (m.media && m.media.src) out.push(abs(m.media.src)); });
     return out;
   }
@@ -348,7 +353,7 @@
   }
 
   global.MasjidPusat = {
-    start: start, slides: slides, ticker: ticker, tick: tick, tampilPenuh: tampilPenuh, sedang: sedang,
+    start: start, slides: slides, ticker: ticker, tick: tick, tampilPenuh: tampilPenuh, sedang: sedang, url: url,
     status: function () { return { aktif: st.aktif, server: st.server, paired: st.paired, code: st.code, name: st.name, online: st.online, err: st.err }; },
   };
 })(window);

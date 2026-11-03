@@ -187,3 +187,13 @@ body.mode-pusat .lp.on { box-shadow: 0 0 0 3px rgba(3, 120, 183, .2); }
 .lp-mini .k-t { background: #d9a441; opacity: .9; }
 .lp-mini .k-m { background: linear-gradient(135deg, #48627a, #1d3346); border-radius: 0; }
 .lp-mini .k-r { background: #163b3d; border-radius: 0; }
+
+/* gambar layar */
+.gl-daftar, .gl-pustaka { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.gl-item, .gl-pilih { position: relative; width: 150px; display: flex; flex-direction: column; gap: 0.3rem; border: 2px solid var(--line); border-radius: 10px; padding: 0.4rem; background: var(--bg-2); font-size: 0.82rem; color: var(--text); text-align: left; }
+.gl-item img, .gl-pilih img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; background: #000; }
+.gl-item span, .gl-pilih span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gl-item .icon-btn { position: absolute; top: 0.6rem; right: 0.6rem; }
+.gl-pilih { cursor: pointer; }
+.gl-pilih.on { border-color: var(--brass); box-shadow: 0 0 0 3px rgba(3, 120, 183, .2); }
+.gl-pilih.on::after { content: '✓'; position: absolute; top: 0.6rem; right: 0.6rem; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--brass); color: var(--brass-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; }
