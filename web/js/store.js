@@ -70,7 +70,7 @@
     },
     tampilan: {
       tema: 'zamrud',
-      layout: 'klasik',      // klasik | sinema | kolom | galeri | fokus | minimal | tegak (lihat js/layout.js)
+      layout: 'klasik',      // klasik | sinema | sinema-lama | kolom | galeri | fokus | minimal | tegak (lihat js/layout.js)
       analog: false,         // jam analog
       dhuha: false,          // tampilkan waktu Dhuha
       pasaran: false,        // pasaran Jawa: Senin Legi, Selasa Pahing, ...
@@ -79,6 +79,8 @@
       live: { aktif: false, url: '', suara: false },
       // gambar di layar besar bila siaran tidak tampil / offline (bergantian bila lebih dari satu)
       gambar: { daftar: [], detik: 15 },
+      // khusus tata letak Sinema: kepekatan kartu, panel info bergantian, sesekali latar penuh
+      sinema: { pekat: 'sedang', panel: 'bergantian', jedaPanel: 40, latarPenuh: true, latarTiap: 60, latarLama: 10 },
       slideDetik: 12,
       redup: { aktif: true, mulai: '22:00', selesai: '03:30', persen: 40 },
       foto: { ada: false, versi: 0, latar: true, panel: true },

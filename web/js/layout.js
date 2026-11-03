@@ -11,7 +11,9 @@
   var LAYOUTS = [
     { id: 'klasik', kotak: [["h",3,3,94,11],["j",3,17,58,46],["p",64,17,33,46],["t",3,66,94,23],["r",0,92,100,8]], nama: 'Klasik', ket: 'Jam besar, panel info di kanan, jadwal berbentuk mihrab di bawah.',
       kerangka: S('top') + '<main class="middle">' + S('clock') + S('panel') + '</main>' + S('times') + S('ticker') },
-    { id: 'sinema', kotak: [["m",0,0,100,92],["h",3,3,94,10],["j",3,46,28,22],["p",69,28,28,40],["t",3,72,94,16],["r",0,92,100,8]], nama: 'Sinema', media: true, ket: 'Siaran langsung / foto memenuhi layar, info di atas kartu kaca.',
+    { id: 'sinema', kotak: [["m",0,0,100,92],["h",3,2,94,7],["j",3,56,22,15],["p",73,44,24,27],["t",3,76,94,9],["r",0,92,100,8]], nama: 'Sinema', media: true, ket: 'Siaran langsung / foto memenuhi layar; info rapat di tepi, tengah layar bersih.',
+      kerangka: S('media') + '<div class="L-lapis">' + S('top') + '<div class="L-isi">' + S('clock') + '<div class="L-ruang"></div>' + S('panel') + '</div>' + S('times') + '</div>' + S('ticker') },
+    { id: 'sinema-lama', kotak: [["m",0,0,100,92],["h",3,3,94,10],["j",3,46,28,22],["p",69,28,28,40],["t",3,72,94,16],["r",0,92,100,8]], nama: 'Sinema (lama)', media: true, ket: 'Seperti Sinema, dengan kartu kaca besar dan jadwal berkotak.',
       kerangka: S('media') + '<div class="L-lapis">' + S('top') + '<div class="L-isi">' + S('clock') + '<div class="L-ruang"></div>' + S('panel') + '</div>' + S('times') + '</div>' + S('ticker') },
     { id: 'kolom', kotak: [["j",2,3,30,22],["t",2,27,30,62],["h",34,3,64,10],["m",34,15,64,74],["p",72,60,24,26],["r",0,92,100,8]], nama: 'Kolom', media: true, ket: 'Jam & jadwal tegak di kiri, siaran langsung / panel info besar di kanan.',
       kerangka: '<div class="L-isi"><div class="L-kiri">' + S('clock') + S('times') + '</div><div class="L-kanan">' + S('top') + '<div class="L-layar">' + S('media') + S('panel') + '</div></div></div>' + S('ticker') },

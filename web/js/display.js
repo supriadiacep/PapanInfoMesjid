@@ -306,13 +306,38 @@
     var dasar = Math.max(5, +cfg.tampilan.slideDetik || 12);
     return m && +m[1] > 0 ? Math.max(3, +m[1]) : dasar;
   }
+  // Sinema: panel info tampil bergantian (tampil selama satu panel, lalu hilang sebentar) agar latar lebih terlihat
+  function sinemaSt() { return cfg.tampilan.layout === 'sinema' ? (cfg.tampilan.sinema || {}) : null; }
+  function panelBergantian() { var s = sinemaSt(); return !!(s && s.panel === 'bergantian' && slides.length); }
   function startSlideTimer() {
     clearTimeout(slideTimer);
+    $('panel').classList.remove('sembunyi');
     slideTimer = setTimeout(function () {
+      if (panelBergantian()) {
+        $('panel').classList.add('sembunyi');
+        slideTimer = setTimeout(function () {
+          refreshSlides(false);
+          if (slides.length > 1) showSlide(slideIdx + 1);
+          startSlideTimer();
+        }, Math.min(600, Math.max(5, +sinemaSt().jedaPanel || 40)) * 1000);
+        return;
+      }
       refreshSlides(false);
       if (slides.length > 1) showSlide(slideIdx + 1);
       startSlideTimer();
     }, slideSec(slideIdx) * 1000 + 600);
+  }
+  // Sinema: sesekali semua info disembunyikan sebentar agar siaran / gambar tampil utuh.
+  // Tidak berjalan menjelang adzan (10 menit), saat adzan/iqomah/sholat, atau bila layar besar tidak berisi siaran/gambar.
+  function renderLatarPenuh(d, st) {
+    var s = sinemaSt(), on = false;
+    if (s && s.latarPenuh && st.mode === 'normal' && !/^hias:/.test(mediaKini || 'hias:')) {
+      var nx = nextPrayer(d), mins = d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+      var tiap = Math.min(3600, Math.max(20, +s.latarTiap || 60)), lama = Math.min(tiap - 5, Math.max(3, +s.latarLama || 10));
+      on = (nx.at - mins) * 60 > 600 && Math.floor(Date.now() / 1000) % tiap < lama;
+    }
+    var h = document.documentElement;
+    if (on) h.classList.add('latar-penuh'); else h.classList.remove('latar-penuh');
   }
 
   // ---------- layar penuh ----------
@@ -421,6 +446,7 @@
       if (window.MasjidPusat) MasjidPusat.tick(st.mode);
       modeChanged(st);
       renderDim(d, st);
+      renderLatarPenuh(d, st);
       // muat ulang halaman sekali sehari pukul 02:xx agar memori box tetap segar
       if (d.getHours() === 2 && Date.now() - startedAt > 6 * 3600e3 && st.mode === 'normal') location.reload();
     } catch (e) { if (window.console) console.error(e); }
@@ -607,6 +633,7 @@
     cfg = conf; rawCfg = raw; cache = {};
     document.body.setAttribute('data-tema', cfg.tampilan.tema || 'zamrud');
     MasjidLayout.terapkan(cfg.tampilan.layout || 'klasik');
+    document.documentElement.setAttribute('data-pekat', (cfg.tampilan.sinema && cfg.tampilan.sinema.pekat) || 'sedang');
     $('analog').hidden = !cfg.tampilan.analog;
     siapkanAnalog();
     acaraKey = '';
@@ -622,7 +649,7 @@
 
   function renderBackground() {
     var bg = $('bg'), foto = MasjidStore.photoUrl(cfg);
-    var on = !!(foto && cfg.tampilan.foto.latar) && cfg.tampilan.layout !== 'sinema'; // sinema: foto sudah jadi media penuh
+    var on = !!(foto && cfg.tampilan.foto.latar) && !/^sinema/.test(cfg.tampilan.layout || ''); // sinema: foto sudah jadi media penuh
     bg.hidden = !on;
     bg.style.backgroundImage = on ? 'url("' + foto.replace(/"/g, '%22') + '")' : 'none';
   }

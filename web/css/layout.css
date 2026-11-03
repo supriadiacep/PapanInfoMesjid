@@ -50,44 +50,122 @@ body[data-tema="terang"] .bg::after { opacity: .9; }
 .kaca { background: rgba(4, 12, 20, 0.55); border: 0.1rem solid rgba(255, 255, 255, 0.12); border-radius: 1.6rem; }
 
 /* =====================================================================
-   SINEMA — media penuh layar, informasi di atas kartu kaca
+   SINEMA — media penuh layar; info dirapatkan ke tepi atas & bawah, tengah dibiarkan bersih.
+   Kepekatan kartu: html[data-pekat] = terang | sedang | gelap.
+   html.latar-penuh = sesaat semua info disembunyikan agar siaran / gambar tampil utuh.
    ===================================================================== */
-html[data-layout="sinema"] body { --plaster: #FFFFFF; --celadon: #D5E2EC; }
+html[data-layout="sinema"] body { --plaster: #FFFFFF; --celadon: #E2EBF2; --sk: 0.6; --sb: 0.55; --sb2: 0.8; }
+html[data-layout="sinema"][data-pekat="terang"] body { --sk: 0.3; --sb: 0.3; --sb2: 0.55; }
+html[data-layout="sinema"][data-pekat="gelap"] body { --sk: 0.8; --sb: 0.75; --sb2: 0.9; }
 html[data-layout="sinema"] #stage { padding: 0; }
 html[data-layout="sinema"] .media { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; }
 html[data-layout="sinema"] .L-lapis {
   position: relative; z-index: 1; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0;
   display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
+  padding: 1.2rem 2.2rem 0;
+}
+/* bayangan hanya di tepi atas & bawah; tengah layar tanpa lapisan */
+html[data-layout="sinema"] .L-lapis::before {
+  content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: -1;
+  background: -webkit-linear-gradient(top, rgba(0,0,0,var(--sb)) 0%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 58%, rgba(0,0,0,var(--sb2)) 100%);
+  background: linear-gradient(to bottom, rgba(0,0,0,var(--sb)) 0%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 58%, rgba(0,0,0,var(--sb2)) 100%);
+  -webkit-transition: opacity 1.2s ease; transition: opacity 1.2s ease;
+}
+html[data-layout="sinema"] .L-lapis > * { -webkit-transition: opacity 1.2s ease; transition: opacity 1.2s ease; }
+/* tulisan diberi bayangan halus agar terbaca di atas gambar apa pun */
+html[data-layout="sinema"] .L-lapis, html[data-layout="sinema"] .ticker { text-shadow: 0 0.1rem 0.5rem rgba(0,0,0,.75), 0 0 0.2rem rgba(0,0,0,.5); }
+
+/* atas: satu baris tipis tanpa kartu */
+html[data-layout="sinema"] .top { height: auto; border: 0; padding: 0.4rem 0.4rem; }
+html[data-layout="sinema"] .mark { width: 3.2rem; height: 3.2rem; }
+html[data-layout="sinema"] #nama { font-size: 2.2rem; }
+html[data-layout="sinema"] #alamat { font-size: 1.15rem; }
+html[data-layout="sinema"] #masehi { font-size: 1.7rem; }
+html[data-layout="sinema"] #hijriah { font-size: 1.3rem; }
+
+/* tengah: kosong; jam kecil di kiri bawah, panel info di kanan bawah */
+html[data-layout="sinema"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; padding: 1rem 0; }
+html[data-layout="sinema"] .L-ruang { -webkit-flex: 1 1 0%; flex: 1 1 0%; }
+html[data-layout="sinema"] .clockwrap { -webkit-flex: none; flex: none; background: rgba(4, 12, 20, var(--sk)); border-radius: 1.4rem; padding: 1rem 1.8rem 1.1rem; border: 0.1rem solid rgba(255,255,255,.1); }
+html[data-layout="sinema"] .clock-isi { -webkit-flex: none; flex: none; }
+html[data-layout="sinema"] #hm { font-size: 6.2rem; }
+html[data-layout="sinema"] #ss { font-size: 2.3rem; width: 3.4rem; margin-left: 0.6rem; }
+html[data-layout="sinema"] .countdown { font-size: 1.5rem; margin-top: 0.5rem; }
+html[data-layout="sinema"] .acara { font-size: 1.2rem; margin-top: 0.4rem; }
+html[data-layout="sinema"] .analog { width: 8.4rem; height: 8.4rem; margin-right: 1.4rem; }
+html[data-layout="sinema"] .analog:not([hidden]) + .clock-isi #hm { font-size: 5rem; }
+html[data-layout="sinema"] .analog:not([hidden]) + .clock-isi #ss { font-size: 2rem; width: 3rem; margin-left: 0.5rem; }
+html[data-layout="sinema"] .panel {
+  width: 30rem; height: 22rem; -webkit-align-self: flex-end; align-self: flex-end; margin: 0;
+  border-left: 0; border-radius: 1.4rem; background: rgba(4, 12, 20, var(--sk)); border: 0.1rem solid rgba(255,255,255,.1); padding: 1.4rem 1.8rem 1rem;
+  -webkit-transition: opacity .8s ease; transition: opacity .8s ease;
+}
+html[data-layout="sinema"] .panel.sembunyi { opacity: 0; }
+
+/* jadwal sholat: satu baris tipis */
+html[data-layout="sinema"] .times {
+  height: auto; padding: 0.5rem; margin-bottom: 1rem; -webkit-align-items: stretch; align-items: stretch;
+  background: rgba(4, 12, 20, var(--sk)); border-radius: 1.4rem; border: 0.1rem solid rgba(255,255,255,.1);
+}
+html[data-layout="sinema"] .arch, html[data-layout="sinema"] .arch.minor, html[data-layout="sinema"] .arch.next {
+  height: auto; border: 0; border-radius: 1rem; background: transparent; box-shadow: none;
+  -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: baseline; align-items: baseline;
+  -webkit-justify-content: center; justify-content: center; padding: 0.7rem 0.4rem;
+}
+html[data-layout="sinema"] .arch + .arch { margin-left: 0.3rem; }
+html[data-layout="sinema"] .arch .ar { display: none; }
+html[data-layout="sinema"] .arch .nm { font-size: 1.35rem; margin-right: 0.7rem; }
+html[data-layout="sinema"] .arch .tm, html[data-layout="sinema"] .arch.next .tm { font-size: 2.5rem; margin-top: 0; }
+html[data-layout="sinema"] .arch.minor .tm { font-size: 2.1rem; }
+html[data-layout="sinema"] .arch.minor .nm { color: var(--celadon); }
+html[data-layout="sinema"] .arch.past { opacity: 0.72; } /* sudah lewat: cukup sedikit redup */
+html[data-layout="sinema"] .arch.next { background: var(--brass); color: var(--brass-ink); text-shadow: none; }
+html[data-layout="sinema"] .arch.next .nm { color: var(--brass-ink); }
+html[data-layout="sinema"] .arch.next::before { display: none; }
+html[data-layout="sinema"] .ticker { position: relative; z-index: 1; margin: 0; background: rgba(0, 0, 0, var(--sb2)); border-top: 0.1rem solid rgba(255,255,255,.1); }
+
+/* latar penuh: info menghilang sebentar, teks berjalan tetap */
+html.latar-penuh[data-layout="sinema"] .L-lapis::before, html.latar-penuh[data-layout="sinema"] .L-lapis > * { opacity: 0; }
+
+/* =====================================================================
+   SINEMA (LAMA) — media penuh layar, informasi di atas kartu kaca besar
+   ===================================================================== */
+html[data-layout="sinema-lama"] body { --plaster: #FFFFFF; --celadon: #D5E2EC; }
+html[data-layout="sinema-lama"] #stage { padding: 0; }
+html[data-layout="sinema-lama"] .media { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; }
+html[data-layout="sinema-lama"] .L-lapis {
+  position: relative; z-index: 1; -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0;
+  display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column;
   padding: 1.8rem 2.2rem 0;
   background: linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 26%, rgba(0,0,0,0) 50%, rgba(0,0,0,.7) 100%);
 }
-html[data-layout="sinema"] .top { height: auto; border: 0; padding: 1.2rem 1.8rem; background: rgba(4, 12, 20, 0.5); border-radius: 1.6rem; }
-html[data-layout="sinema"] #nama { font-size: 2.4rem; }
-html[data-layout="sinema"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; padding: 1.4rem 0; }
-html[data-layout="sinema"] .L-ruang { -webkit-flex: 1 1 0%; flex: 1 1 0%; }
-html[data-layout="sinema"] .clockwrap { -webkit-flex: none; flex: none; background: rgba(4, 12, 20, 0.55); border-radius: 1.6rem; padding: 1.4rem 2.2rem; border: 0.1rem solid rgba(255,255,255,.12); }
-html[data-layout="sinema"] .clock-isi { -webkit-flex: none; flex: none; }
-html[data-layout="sinema"] #hm { font-size: 8.4rem; }
-html[data-layout="sinema"] #ss { font-size: 3rem; width: 4.4rem; margin-left: 0.8rem; }
-html[data-layout="sinema"] .countdown { font-size: 1.8rem; margin-top: 0.8rem; }
-html[data-layout="sinema"] .acara { font-size: 1.4rem; margin-top: 0.6rem; }
-html[data-layout="sinema"] .analog { width: 11rem; height: 11rem; margin-right: 1.6rem; }
-html[data-layout="sinema"] .analog:not([hidden]) + .clock-isi #hm { font-size: 6.4rem; }
-html[data-layout="sinema"] .panel { width: 31rem; height: 27rem; -webkit-align-self: flex-end; align-self: flex-end; margin: 0; border-left: 0; border-radius: 1.6rem; background: rgba(4, 12, 20, 0.6); border: 0.1rem solid rgba(255,255,255,.12); padding: 1.6rem 2rem 1.2rem; }
-html[data-layout="sinema"] .times { height: auto; padding-bottom: 1.4rem; -webkit-align-items: stretch; align-items: stretch; }
-html[data-layout="sinema"] .arch, html[data-layout="sinema"] .arch.minor, html[data-layout="sinema"] .arch.next {
+html[data-layout="sinema-lama"] .top { height: auto; border: 0; padding: 1.2rem 1.8rem; background: rgba(4, 12, 20, 0.5); border-radius: 1.6rem; }
+html[data-layout="sinema-lama"] #nama { font-size: 2.4rem; }
+html[data-layout="sinema-lama"] .L-isi { -webkit-flex: 1 1 0%; flex: 1 1 0%; min-height: 0; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; padding: 1.4rem 0; }
+html[data-layout="sinema-lama"] .L-ruang { -webkit-flex: 1 1 0%; flex: 1 1 0%; }
+html[data-layout="sinema-lama"] .clockwrap { -webkit-flex: none; flex: none; background: rgba(4, 12, 20, 0.55); border-radius: 1.6rem; padding: 1.4rem 2.2rem; border: 0.1rem solid rgba(255,255,255,.12); }
+html[data-layout="sinema-lama"] .clock-isi { -webkit-flex: none; flex: none; }
+html[data-layout="sinema-lama"] #hm { font-size: 8.4rem; }
+html[data-layout="sinema-lama"] #ss { font-size: 3rem; width: 4.4rem; margin-left: 0.8rem; }
+html[data-layout="sinema-lama"] .countdown { font-size: 1.8rem; margin-top: 0.8rem; }
+html[data-layout="sinema-lama"] .acara { font-size: 1.4rem; margin-top: 0.6rem; }
+html[data-layout="sinema-lama"] .analog { width: 11rem; height: 11rem; margin-right: 1.6rem; }
+html[data-layout="sinema-lama"] .analog:not([hidden]) + .clock-isi #hm { font-size: 6.4rem; }
+html[data-layout="sinema-lama"] .panel { width: 31rem; height: 27rem; -webkit-align-self: flex-end; align-self: flex-end; margin: 0; border-left: 0; border-radius: 1.6rem; background: rgba(4, 12, 20, 0.6); border: 0.1rem solid rgba(255,255,255,.12); padding: 1.6rem 2rem 1.2rem; }
+html[data-layout="sinema-lama"] .times { height: auto; padding-bottom: 1.4rem; -webkit-align-items: stretch; align-items: stretch; }
+html[data-layout="sinema-lama"] .arch, html[data-layout="sinema-lama"] .arch.minor, html[data-layout="sinema-lama"] .arch.next {
   height: 9rem; border-radius: 1.3rem; border: 0.1rem solid rgba(255,255,255,.14); background: rgba(4, 12, 20, 0.55);
   -webkit-justify-content: center; justify-content: center; padding: 0; box-shadow: none;
 }
-html[data-layout="sinema"] .arch + .arch { margin-left: 0.9rem; }
-html[data-layout="sinema"] .arch .ar { display: none; }
-html[data-layout="sinema"] .arch .nm { font-size: 1.4rem; }
-html[data-layout="sinema"] .arch .tm, html[data-layout="sinema"] .arch.next .tm { font-size: 3.3rem; margin-top: 0.1rem; }
-html[data-layout="sinema"] .arch.minor .tm { font-size: 2.6rem; }
-html[data-layout="sinema"] .arch.next { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
-html[data-layout="sinema"] .arch.next .nm { color: var(--brass-ink); }
-html[data-layout="sinema"] .arch.next::before { display: none; }
-html[data-layout="sinema"] .ticker { position: relative; z-index: 1; margin: 0; background: rgba(0, 0, 0, 0.72); border-top: 0.1rem solid rgba(255,255,255,.12); }
+html[data-layout="sinema-lama"] .arch + .arch { margin-left: 0.9rem; }
+html[data-layout="sinema-lama"] .arch .ar { display: none; }
+html[data-layout="sinema-lama"] .arch .nm { font-size: 1.4rem; }
+html[data-layout="sinema-lama"] .arch .tm, html[data-layout="sinema-lama"] .arch.next .tm { font-size: 3.3rem; margin-top: 0.1rem; }
+html[data-layout="sinema-lama"] .arch.minor .tm { font-size: 2.6rem; }
+html[data-layout="sinema-lama"] .arch.next { background: var(--brass); border-color: var(--brass); color: var(--brass-ink); }
+html[data-layout="sinema-lama"] .arch.next .nm { color: var(--brass-ink); }
+html[data-layout="sinema-lama"] .arch.next::before { display: none; }
+html[data-layout="sinema-lama"] .ticker { position: relative; z-index: 1; margin: 0; background: rgba(0, 0, 0, 0.72); border-top: 0.1rem solid rgba(255,255,255,.12); }
 
 /* =====================================================================
    KOLOM — jam & jadwal tegak di kiri, layar besar di kanan

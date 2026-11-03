@@ -308,12 +308,19 @@
     }).join('');
     return '<h2>Tampilan layar</h2><p class="section-intro">Pilih tata letak dan warna, tambahan seperti jam analog, Dhuha, pasaran, hitung mundur hari besar, serta siaran langsung Makkah/Madinah.</p>' +
       '<div class="group"><h3>Tata letak</h3><p>Ketuk salah satu, lalu tekan Simpan. Hasilnya bisa dilihat lewat tombol Lihat layar' + (PUSAT ? ' atau pratinjau di sebelah' : '') + '.</p><div class="lp-daftar">' + kartu + '</div></div>' +
+      group('Khusus tata letak Sinema', 'Atur agar siaran / gambar di belakang lebih terlihat. Hanya berlaku untuk tata letak Sinema (bukan Sinema lama).',
+        field({ path: 'tampilan.sinema.pekat', label: 'Kepekatan kotak info', type: 'select', options: [['terang', 'Terang — latar paling terlihat'], ['sedang', 'Sedang (disarankan)'], ['gelap', 'Gelap — tulisan paling jelas']] }) +
+        field({ path: 'tampilan.sinema.panel', label: 'Panel info (pengajian, pengumuman, …)', type: 'select', options: [['bergantian', 'Muncul bergantian'], ['selalu', 'Selalu tampil']] }) +
+        field({ path: 'tampilan.sinema.jedaPanel', label: 'Panel hilang selama (detik)', help: 'Bila "Muncul bergantian": tiap panel tampil seperti biasa, lalu hilang sekian detik.', type: 'number', min: 5, max: 600, step: 1 }) +
+        field({ path: 'tampilan.sinema.latarPenuh', label: 'Sesekali tampilkan latar penuh (info disembunyikan sebentar)', type: 'check' }) +
+        field({ path: 'tampilan.sinema.latarTiap', label: 'Latar penuh setiap (detik)', type: 'number', min: 20, max: 3600, step: 1 }) +
+        field({ path: 'tampilan.sinema.latarLama', label: 'Latar penuh selama (detik)', help: 'Tidak berjalan 10 menit menjelang adzan, saat adzan, iqomah, dan sholat.', type: 'number', min: 3, max: 600, step: 1 }), true) +
       group('Tambahan di layar', '',
         field({ path: 'tampilan.analog', label: 'Jam analog', type: 'check' }) +
         field({ path: 'tampilan.dhuha', label: 'Waktu Dhuha', type: 'check' }) +
         field({ path: 'tampilan.pasaran', label: 'Pasaran Jawa (Legi, Pahing, …)', type: 'check' }) +
         field({ path: 'tampilan.acara', label: 'Hitung mundur hari besar Islam', type: 'check' })) +
-      '<div class="group"><h3>Siaran langsung (YouTube)</h3><p>Tampil di tata letak Sinema, Kolom, Galeri, dan Tegak. Butuh internet; bila internet putus, layar memakai foto masjid. Suara mati kecuali dinyalakan.</p>' +
+      '<div class="group"><h3>Siaran langsung (YouTube)</h3><p>Tampil di tata letak Sinema, Sinema (lama), Kolom, Galeri, dan Tegak. Butuh internet; bila internet putus, layar memakai foto masjid. Suara mati kecuali dinyalakan.</p>' +
       '<div class="grid wide">' +
       field({ path: 'tampilan.live.aktif', label: 'Tampilkan siaran langsung', type: 'check' }) +
       field({ path: 'tampilan.live.url', label: 'Tautan YouTube (kanal atau video siaran)', help: 'Contoh kanal: https://www.youtube.com/channel/UC… — tautan kanal lebih awet karena siaran yang berganti tetap ikut.', wide: true }) +
