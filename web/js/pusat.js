@@ -21,6 +21,26 @@
   function abs(src) { return /^https?:/.test(src) ? src : base() + src; }
   function url(src) { var u = abs(src); return blobs[u] || u; }
   function sekarang() { return Date.now() + st.skew; }
+
+  // ---------- jadwal tayang per jam (diatur di pusat: Layar TV > Ubah) ----------
+  // Jam memakai zona waktu lokasi (WIB/WITA/WIT) dari jam server, tidak tergantung jam box.
+  var ZONA = { WIB: 7, WITA: 8, WIT: 9 };
+  function keMenit(t) { var p = String(t || '').split(':'), h = parseInt(p[0], 10), m = parseInt(p[1], 10); return isNaN(h) || isNaN(m) ? null : h * 60 + m; }
+  function jadwalAktif() {
+    var daftar = (st.cfg && st.cfg.jadwal) || [];
+    if (!daftar.length) return null;
+    var tz = ZONA[(st.cfg.location || {}).tz] || 7;
+    var d = new Date(sekarang() + tz * 3600e3), hari = d.getUTCDay(), kemarin = (hari + 6) % 7, m = d.getUTCHours() * 60 + d.getUTCMinutes();
+    for (var n = 0; n < daftar.length; n++) {
+      var j = daftar[n], a = keMenit(j.mulai), b = keMenit(j.selesai), h = j.hari || [0, 1, 2, 3, 4, 5, 6];
+      if (a == null || b == null) continue;
+      var kena = a < b ? (h.indexOf(hari) >= 0 && m >= a && m < b)
+        : ((h.indexOf(hari) >= 0 && m >= a) || (h.indexOf(kemarin) >= 0 && m < b)); // melewati tengah malam
+      if (kena) return j;
+    }
+    return null;
+  }
+  function isiTayang() { var j = jadwalAktif(); return j ? j.items || [] : (st.cfg && st.cfg.items) || []; }
   function lsGet(k) { try { return global.localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { if (v == null) global.localStorage.removeItem(k); else global.localStorage.setItem(k, v); } catch (e) { } }
 
@@ -188,6 +208,7 @@
     var out = [];
     if (!st.cfg) return out;
     (st.cfg.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); });
+    (st.cfg.jadwal || []).forEach(function (j) { (j.items || []).forEach(function (i) { if (i.src) out.push(abs(i.src)); }); });
     (st.cfg.messages || []).forEach(function (m) { if (m.media && m.media.src) out.push(abs(m.media.src)); });
     return out;
   }
@@ -267,7 +288,7 @@
     }
     if (!st.cfg) return [];
     var out = [];
-    (st.cfg.items || []).forEach(function (it) {
+    isiTayang().forEach(function (it) {
       var h = mediaHtml(it);
       if (h) out.push({ html: h, detik: it.duration || 0, judul: it.title });
     });
@@ -319,7 +340,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          app: 'LayarPintar TV ' + (i.version || ''), version: st.cfg && st.cfg.version, item: sedangTayang,
+          app: 'LayarPintar TV ' + (i.version || ''), version: st.cfg && st.cfg.version, item: (function () { var j = jadwalAktif(); return j ? '[' + (j.nama || j.mulai + '-' + j.selesai) + '] ' : ''; })() + sedangTayang,
           online: st.online, ua: String(navigator.userAgent).slice(0, 200), screen: screen.width + 'x' + screen.height,
         }),
       });
