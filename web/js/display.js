@@ -489,7 +489,7 @@
       if (/^[\w-]{11}$/.test(u)) id = u;
       else if ((m = /(?:v=|youtu\.be\/|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/.exec(u))) id = m[1];
     }
-    var q = 'autoplay=1&mute=' + (suara ? 0 : 1) + '&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3';
+    var q = 'autoplay=1&mute=' + (suara ? 0 : 1) + '&controls=0&rel=0&modestbranding=1&playsinline=1&iv_load_policy=3&enablejsapi=1';
     if (ch) {
       var r = siaran[ch[1]];
       if (r && r.id) return 'https://www.youtube-nocookie.com/embed/' + r.id + '?' + q; // siaran yang sedang tayang (dicari server pusat)
@@ -525,7 +525,7 @@
     var lv = cfg.tampilan.live || {}, foto = MasjidStore.photoUrl(cfg);
     var gj = window.MasjidPusat && MasjidPusat.gambarJadwal ? MasjidPusat.gambarJadwal() : null; // jadwal tayang dari pusat
     var gb = (gj || (cfg.tampilan.gambar && cfg.tampilan.gambar.daftar) || []).filter(function (x) { return x && x.url; });
-    var online = navigator.onLine !== false;
+    var online = navigator.onLine !== false && internetOk && Date.now() >= liveGagalSampai;
     var src = L.media && lv.aktif && online ? ytEmbed(lv.url, lv.suara) : null;
     var isi, jenis;
     if (src) { jenis = 'live:' + src; isi = '<iframe src="' + esc(src) + '" allow="autoplay; encrypted-media" frameborder="0" referrerpolicy="strict-origin-when-cross-origin"></iframe>'; }
@@ -541,9 +541,66 @@
     }
     el.hidden = !L.media;
     stage.className = (src || gb.length || foto) && L.media ? 'ada-media' : 'tanpa-media';
-    if (jenis !== mediaKini) { el.innerHTML = isi; mediaKini = jenis; } // siaran tidak dimuat ulang bila tidak berubah
+    if (jenis !== mediaKini) { el.innerHTML = isi; mediaKini = jenis; if (src) pantauSiaran(); } // siaran tidak dimuat ulang bila tidak berubah
+    jagaSiaran(L.media && lv.aktif);
   }
-  window.addEventListener('online', function () { if (cfg) renderMedia(); });
+  // ---------- siaran langsung: otomatis pindah ke gambar bila internet putus / siaran macet ----------
+  // navigator.onLine sering tetap "online" di TV box walau internet putus (WiFi tersambung),
+  // jadi internet diperiksa sendiri; pemutar YouTube juga dipantau (galat / berhenti / macet memuat).
+  var internetOk = true, liveGagalSampai = 0, cekTimer = null, cekJalan = false, gagalBeruntun = 0;
+  var ytKeadaan = -1, ytSejak = 0, ytMacetTimer = null;
+  function setInternet(ok) {
+    gagalBeruntun = ok ? 0 : gagalBeruntun + 1;
+    if (!ok && gagalBeruntun === 1) setTimeout(cekInternet, 3000); // pastikan cepat
+    var baru = ok || gagalBeruntun < 2 ? (ok ? true : internetOk) : false; // putus = 2x gagal berturut-turut
+    if (baru !== internetOk) { internetOk = baru; if (cfg) renderMedia(); }
+  }
+  function cekInternet() {
+    if (cekJalan) return;
+    cekJalan = true;
+    var selesai = false, t = setTimeout(function () { if (!selesai) { selesai = true; cekJalan = false; setInternet(false); } }, 8000);
+    fetch('https://www.youtube-nocookie.com/favicon.ico?_=' + Date.now(), { mode: 'no-cors', cache: 'no-store' }).then(
+      function () { if (!selesai) { selesai = true; cekJalan = false; clearTimeout(t); setInternet(true); } },
+      function () { if (!selesai) { selesai = true; cekJalan = false; clearTimeout(t); setInternet(false); } });
+  }
+  // berjalan hanya bila siaran diaktifkan pada tata letak yang punya layar besar
+  function jagaSiaran(perlu) {
+    if (perlu && !cekTimer) { cekTimer = setInterval(function () { cekInternet(); if (liveGagalSampai && Date.now() >= liveGagalSampai) { liveGagalSampai = 0; renderMedia(); } }, 15000); cekInternet(); }
+    else if (!perlu && cekTimer) { clearInterval(cekTimer); cekTimer = null; internetOk = true; }
+  }
+  function siaranGagal(alasan) {
+    if (!/^live:/.test(mediaKini)) return;
+    liveGagalSampai = Date.now() + 3 * 60000; // coba lagi 3 menit kemudian
+    try { console.warn('siaran diganti gambar:', alasan); } catch (e) { }
+    renderMedia();
+  }
+  function pantauSiaran() {
+    ytKeadaan = -1; ytSejak = Date.now();
+    var fr = document.querySelector('#media iframe');
+    if (!fr) return;
+    fr.onload = function () {
+      // minta pemutar YouTube mengirim kabar keadaan (tanpa memuat skrip API)
+      try { fr.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) { }
+      try { fr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'addEventListener', args: ['onError'], id: 1, channel: 'widget' }), '*'); } catch (e) { }
+    };
+    clearInterval(ytMacetTimer);
+    ytMacetTimer = setInterval(function () {
+      if (!/^live:/.test(mediaKini)) { clearInterval(ytMacetTimer); return; }
+      // belum pernah main (-1/5) atau memuat (3) terlalu lama = macet
+      if (ytKeadaan !== 1 && ytKeadaan !== 2 && Date.now() - ytSejak > 60000) siaranGagal('macet ' + ytKeadaan);
+    }, 10000);
+  }
+  window.addEventListener('message', function (e) {
+    if (!/youtube(-nocookie)?\.com$/.test(String(e.origin).replace(/^https?:[/][/](www[.])?/, ''))) return;
+    var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
+    if (!d) return;
+    if (d.event === 'onError') { siaranGagal('galat ' + d.info); return; }
+    var k = d.event === 'onStateChange' ? d.info : d.info && typeof d.info.playerState === 'number' ? d.info.playerState : null;
+    if (k == null || k === ytKeadaan) return;
+    ytKeadaan = k; ytSejak = Date.now();
+    if (k === 0) siaranGagal('siaran berhenti');
+  });
+  window.addEventListener('online', function () { if (cfg) { cekInternet(); renderMedia(); } });
   window.addEventListener('offline', function () { if (cfg) renderMedia(); });
 
   function applyConfig(conf, raw) {
