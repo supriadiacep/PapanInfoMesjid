@@ -189,6 +189,17 @@
       req('/api/player/masjid', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: kirim, diubah: L || 1 }) })
         .then(function () { sedangKirim = false; }, function () { sedangKirim = false; });
       return;
+    } else if (L === 0 && !s.masjid && loc.lat != null && loc.lon != null) {
+      // box baru & papan belum pernah diatur di pusat: jangan pakai koordinat contoh (Tangerang),
+      // ambil nama, alamat, koordinat & zona waktu lokasi. Disimpan di box -> tetap dipakai saat offline.
+      var tz = ZONA[loc.tz] || 7, m = lokal.masjid || {};
+      if (m.lat === loc.lat && m.lng === loc.lon && m.tz === tz) return;
+      var awal = S.clone(lokal);
+      awal.masjid = S.merge(m, { lat: loc.lat, lng: loc.lon, tz: tz });
+      if (loc.name) awal.masjid.nama = loc.name;
+      if (loc.address) awal.masjid.alamat = loc.address;
+      st.lokal = awal; // diubah tetap 0: belum dianggap diatur pengurus
+      S.terapkanPusat(awal);
     }
   }
 

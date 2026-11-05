@@ -61,9 +61,44 @@
     return (t.getFullYear() === y && t.getMonth() === mo - 1 && t.getDate() === d) ? kunci(t) : null;
   }
 
+  /** "-6,3321582" / " -6.33 " / -6.33 -> angka, atau null bila kosong / bukan angka */
+  function keAngka(v) {
+    if (typeof v === 'number') return isFinite(v) ? v : null;
+    var s = String(v == null ? '' : v).trim().replace(',', '.');
+    return /^[-+]?\d+(\.\d+)?$/.test(s) ? parseFloat(s) : null;
+  }
+  /** "-6.3321582, 106.7199787" atau tautan Google Maps ".../@-6.33,106.71,17z" -> {lat, lng} atau null */
+  function bacaKoordinat(teks) {
+    var m = /(?:^|[^\d.])(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/.exec(String(teks || ''));
+    return m ? { lat: +m[1], lng: +m[2] } : null;
+  }
+
+  // titik acuan bila koordinat rusak: kota besar di tiap zona waktu
+  var ACUAN = { 7: [-6.2088, 106.8456], 8: [-5.1477, 119.4327], 9: [-2.5337, 140.7181] };
+  /**
+   * Periksa koordinat masjid. Bujur harus cocok dengan zona waktu (WIB ±105°, WITA ±120°, WIT ±135°):
+   * bujur kosong / 0 / tertukar dengan lintang menggeser semua waktu berjam-jam
+   * (mis. pukul 17.44 layar masih menunggu Dzuhur).
+   * @returns {string|null} pesan masalah, atau null bila wajar
+   */
+  function cekLokasi(m) {
+    var lat = keAngka(m && m.lat), lng = keAngka(m && m.lng), tz = keAngka(m && m.tz);
+    if (tz == null || tz < -12 || tz > 14) return 'Zona waktu belum dipilih.';
+    if (lat == null || lng == null) return 'Lintang dan bujur harus diisi angka (contoh -6.3321582 dan 106.7199787).';
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return 'Lintang atau bujur di luar jangkauan. Pastikan tidak tertukar: lintang dulu (mis. -6.33), lalu bujur (mis. 106.72).';
+    if (Math.abs(lng / 15 - tz) > 0.9) return 'Bujur ' + lng + ' tidak cocok dengan zona waktu UTC+' + tz + '. Periksa bujur (mis. 106.72 untuk WIB), mungkin tertukar dengan lintang, atau zona waktunya keliru.';
+    return null;
+  }
+
   function opsi(cfg) {
     var m = cfg.masjid, s = cfg.sholat;
-    return { lat: m.lat, lng: m.lng, tz: m.tz, elev: m.elev, fajr: s.fajr, isha: s.isha, asr: s.asr, ihtiyat: s.ihtiyat, imsak: s.imsak, adjust: s.adjust };
+    var lat = keAngka(m.lat), lng = keAngka(m.lng), tz = keAngka(m.tz);
+    if (cekLokasi(m)) {
+      // jangan tampilkan jadwal yang meleset berjam-jam: pakai kota acuan di zona waktunya
+      if (!ACUAN[tz]) tz = 7;
+      lat = ACUAN[tz][0]; lng = ACUAN[tz][1];
+    }
+    return { lat: lat, lng: lng, tz: tz, elev: m.elev, fajr: s.fajr, isha: s.isha, asr: s.asr, ihtiyat: s.ihtiyat, imsak: s.imsak, adjust: s.adjust };
   }
   function hitung(cfg, d) { return global.PrayTime.compute(d, opsi(cfg)); }
 
@@ -222,6 +257,7 @@
   global.MasjidJadwal = {
     WAKTU: WAKTU, JUDUL: JUDUL, kunci: kunci, keMenit: keMenit, keTanggal: keTanggal,
     hitung: hitung, jadwalHari: jadwalHari, templateCsv: templateCsv,
+    keAngka: keAngka, bacaKoordinat: bacaKoordinat, cekLokasi: cekLokasi,
     bacaFile: bacaFile, bacaTabel: bacaTabel, pisahCsv: pisahCsv, bacaXlsx: bacaXlsx
   };
   if (typeof module !== 'undefined') module.exports = global.MasjidJadwal;

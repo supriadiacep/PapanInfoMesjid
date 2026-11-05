@@ -56,6 +56,9 @@
       input = '<textarea id="' + id + '" data-path="' + o.path + '" data-type="text">' + esc(v) + '</textarea>';
     } else {
       var t = o.type || 'text';
+      if (t === 'koord') // teks agar koma ("-6,33") tetap terbaca; isian number di HP berbahasa Indonesia sering kosong
+        return '<div class="field"><label for="' + id + '">' + esc(o.label) + '</label><input id="' + id + '" type="text" inputmode="decimal" autocomplete="off" data-path="' + o.path +
+          '" data-type="koord" value="' + esc(v) + '">' + (o.help ? '<small>' + esc(o.help) + '</small>' : '') + '</div>';
       input = '<input id="' + id + '" type="' + (t === 'number' ? 'number' : t) + '" data-path="' + o.path + '" data-type="' + (t === 'number' ? 'number' : 'text') + '"' +
         (o.min != null ? ' min="' + o.min + '"' : '') + (o.max != null ? ' max="' + o.max + '"' : '') + (o.step != null ? ' step="' + o.step + '"' : '') +
         (t === 'number' ? ' inputmode="decimal"' : '') + ' value="' + esc(v) + '">';
@@ -103,12 +106,14 @@
     return '<h2>Data masjid</h2><p class="section-intro">Nama dan alamat tampil di bagian atas layar. Koordinat dipakai untuk menghitung waktu sholat tanpa internet.</p>' +
       group('Identitas', '', field({ path: 'masjid.nama', label: 'Nama masjid' }) + field({ path: 'masjid.alamat', label: 'Alamat singkat' }), true) +
       group('Lokasi', 'Salin dari Google Maps: tekan lama titik masjid, lalu salin angka koordinatnya.',
-        field({ path: 'masjid.lat', label: 'Lintang', type: 'number', step: 'any', help: 'Contoh: -6.3321582' }) +
-        field({ path: 'masjid.lng', label: 'Bujur', type: 'number', step: 'any', help: 'Contoh: 106.7199787' }) +
+        '<div class="field wide"><label for="tempelKoord">Tempel koordinat dari Google Maps (boleh kosong)</label>' +
+        '<input id="tempelKoord" type="text" placeholder="-6.3321582, 106.7199787"><small>Lintang dan bujur langsung terisi.</small></div>' +
+        field({ path: 'masjid.lat', label: 'Lintang', type: 'koord', help: 'Contoh: -6.3321582 (Indonesia: -11 s.d. 6)' }) +
+        field({ path: 'masjid.lng', label: 'Bujur', type: 'koord', help: 'Contoh: 106.7199787 (Indonesia: 95 s.d. 141)' }) +
         field({ path: 'masjid.tz', label: 'Zona waktu', type: 'select', num: true, options: [[7, 'WIB (UTC+7)'], [8, 'WITA (UTC+8)'], [9, 'WIT (UTC+9)']] }) +
         field({ path: 'masjid.elev', label: 'Ketinggian (meter)', type: 'number', min: 0, step: 1 })) +
       photoGroup() +
-      '<div class="group"><h3>Waktu sholat 7 hari ke depan</h3><p>Periksa dan bandingkan dengan jadwal Kemenag setempat. Jika berbeda, atur di bagian Waktu sholat.</p><div id="preview"></div></div>';
+      '<div class="group"><h3>Waktu sholat 7 hari ke depan</h3><p>Periksa dan bandingkan dengan jadwal Kemenag setempat. Jika berbeda, atur di bagian Waktu sholat.</p><div id="lokasiCek"></div><div id="preview"></div></div>';
   }
 
   function photoGroup() {
@@ -434,6 +439,9 @@
   // ---------- isi dinamis ----------
   function renderPreview() {
     var el = $('preview'); if (!el) return;
+    var cek = $('lokasiCek'), masalah = MasjidJadwal.cekLokasi(cfg.masjid);
+    if (cek) cek.innerHTML = masalah ? '<div class="callout warn"><span class="warn-title">Koordinat belum benar.</span> ' + esc(masalah) +
+      ' Sementara jadwal dihitung dari kota acuan di zona waktu ini, jadi bisa selisih beberapa menit.</div>' : '';
     var m = cfg.masjid, s = cfg.sholat, d = new Date(), html = '<div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Imsak</th><th>Subuh</th><th>Terbit</th><th>Dzuhur</th><th>Ashar</th><th>Maghrib</th><th>Isya</th></tr></thead><tbody>';
     for (var i = 0; i < 7; i++) {
       var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
@@ -547,6 +555,22 @@
     var el = e.target, path = el.dataset && el.dataset.path;
     if (el.id === 'runningText') {
       cfg.info.runningText = el.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean); markDirty(); return;
+    }
+    if (el.id === 'tempelKoord' || (el.dataset && el.dataset.type === 'koord')) {
+      // "-6.33, 106.72" ditempel (di kotak tempel atau langsung di lintang/bujur) -> isi keduanya
+      var pasangan = MasjidJadwal.bacaKoordinat(el.value);
+      if (pasangan) {
+        cfg.masjid.lat = pasangan.lat; cfg.masjid.lng = pasangan.lng;
+        if ($('f_masjid_lat')) $('f_masjid_lat').value = pasangan.lat;
+        if ($('f_masjid_lng')) $('f_masjid_lng').value = pasangan.lng;
+        markDirty(); renderPreview(); return;
+      }
+      if (!path) return;
+      var angka = MasjidJadwal.keAngka(el.value);
+      // kosong / salah ketik tidak disimpan sebagai 0 (bujur 0 menggeser jadwal ±7 jam)
+      el.classList.toggle('invalid', angka == null);
+      if (angka == null) return;
+      set(path, angka); markDirty(); renderPreview(); return;
     }
     if (!path) return;
     var v = el.dataset.type === 'check' ? el.checked : el.dataset.type === 'number' ? (el.value === '' ? 0 : parseFloat(el.value)) : el.value;
